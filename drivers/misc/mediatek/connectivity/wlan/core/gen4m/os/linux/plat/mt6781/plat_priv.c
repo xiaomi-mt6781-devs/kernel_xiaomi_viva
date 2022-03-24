@@ -11,6 +11,23 @@
 #include "precomp.h"
 #include "wmt_exp.h"
 
+#if KERNEL_VERSION(4, 19, 0) <= CFG80211_VERSION_CODE
+#include <linux/soc/mediatek/mtk-pm-qos.h>
+#include <helio-dvfsrc-opp.h>
+#define pm_qos_add_request(_req, _class, _value) \
+		mtk_pm_qos_add_request(_req, _class, _value)
+#define pm_qos_update_request(_req, _value) \
+		mtk_pm_qos_update_request(_req, _value)
+#define pm_qos_remove_request(_req) \
+		mtk_pm_qos_remove_request(_req)
+#define pm_qos_request mtk_pm_qos_request
+#define PM_QOS_DDR_OPP MTK_PM_QOS_DDR_OPP
+#define ppm_limit_data cpu_ctrl_data
+#else
+#include <linux/pm_qos.h>
+#include <helio-dvfsrc-opp-v6781.h>
+#endif
+
 #ifdef CONFIG_MEDIATEK_EMI
 #include <memory/mediatek/emi.h>
 #define WIFI_EMI_MEM_OFFSET    0x2A0000
@@ -89,10 +106,11 @@ int32_t kalBoostCpu(IN struct ADAPTER *prAdapter,
 			pr_info("kalBoostCpu start (%d>=%d)\n",
 				u4TarPerfLevel, u4BoostCpuTh);
 			fgRequested = ENUM_CPU_BOOST_STATUS_START;
-
+#if KERNEL_VERSION(4, 19, 0) > CFG80211_VERSION_CODE
 			set_task_util_min_pct(prGlueInfo->u4TxThreadPid, 100);
 			set_task_util_min_pct(prGlueInfo->u4RxThreadPid, 100);
 			set_task_util_min_pct(prGlueInfo->u4HifThreadPid, 100);
+#endif
 			kalSetRpsMap(prGlueInfo, CPU_BIG_CORE);
 			update_userlimit_cpu_freq(CPU_KIR_WIFI,
 				u4ClusterNum, freq_to_set);
@@ -110,10 +128,11 @@ int32_t kalBoostCpu(IN struct ADAPTER *prAdapter,
 			pr_info("kalBoostCpu stop (%d<%d)\n",
 				u4TarPerfLevel, u4BoostCpuTh);
 			fgRequested = ENUM_CPU_BOOST_STATUS_STOP;
-
+#if KERNEL_VERSION(4, 19, 0) > CFG80211_VERSION_CODE
 			set_task_util_min_pct(prGlueInfo->u4TxThreadPid, 0);
 			set_task_util_min_pct(prGlueInfo->u4RxThreadPid, 0);
 			set_task_util_min_pct(prGlueInfo->u4HifThreadPid, 0);
+#endif
 			kalSetRpsMap(prGlueInfo, CPU_SMALL_CORE);
 			update_userlimit_cpu_freq(CPU_KIR_WIFI,
 				u4ClusterNum, freq_to_set);
