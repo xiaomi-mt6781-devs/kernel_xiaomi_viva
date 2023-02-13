@@ -13,6 +13,16 @@
 
 ###############################################################################
 # Necessary Check
+CFG_FM_CHIP := mt6635
+
+$(info [fm_drv:Makefile] M = $(M))
+$(info [fm_drv:Makefile] FM_CHIP_ID = $(FM_CHIP_ID))
+$(info [fm_drv:Makefile] FM_CHIP = $(FM_CHIP))
+$(info [fm_drv:Makefile] FM_PLAT = $(FM_PLAT))
+$(info [fm_drv:Makefile] CFG_FM_PLAT = $(CFG_FM_PLAT))
+$(info [fm_drv:Makefile] CFG_BUILD_CONNAC2 = $(CFG_BUILD_CONNAC2))
+$(info [fm_drv:Makefile] CFG_FM_CHIP_ID = $(CFG_FM_CHIP_ID))
+$(info [fm_drv:Makefile] CFG_FM_CHIP = $(CFG_FM_CHIP))
 
 ifneq ($(KERNEL_OUT),)
     ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
