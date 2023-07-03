@@ -43,6 +43,7 @@ mainaf-y  += common/bu64748af/bu64748_function.o
 mainaf-y  += common/bu64748af/bu64748af.o
 mainaf-y  += common/dw9714af/DW9714AF.o
 mainaf-y  += common/dw9800waf/DW9800WAF.o
+mainaf-y  += common/dw9800vaf/DW9800VAF.o
 mainaf-y  += common/dw9814af/DW9814AF.o
 mainaf-y  += common/dw9718af/DW9718AF.o
 mainaf-y  += common/dw9718saf/DW9718SAF.o
