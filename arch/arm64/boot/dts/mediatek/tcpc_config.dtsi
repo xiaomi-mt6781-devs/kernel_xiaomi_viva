@@ -5,6 +5,7 @@
 
 / {
 	rt1711_typec: rt1711_type_c_port0 {
+        tcpc-dual,supported_modes = <0>;
 		rt-tcpc,name = "type_c_port0"; /* tcpc_device's name */
 		rt-tcpc,role_def = <5>; /* 0: Unknown, 1: SNK, 2: SRC */
 					/* 3: DRP, 4: Try.SRC, 5: Try.SNK */
@@ -16,8 +17,8 @@
 #else
 		rt-tcpc,notifier_supply_num = <2>;
 #endif
-		rt1711pd,intr_gpio = <&pio 41 0x0>;
-		rt1711pd,intr_gpio_num = <41>;
+		rt1711pd,intr_gpio = <&pio 83 0x0>;
+		rt1711pd,intr_gpio_num = <83>;
 		pd-data {
 			pd,vid = <0x29cf>;
 			pd,pid = <0x1711>;
