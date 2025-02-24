@@ -52,6 +52,7 @@
 #include "ap_md_reg_dump.h"
 #endif
 #include "modem_secure_base.h"
+#include "hif/ccci_hif_dpmaif.h"
 
 static struct ccci_clk_node clk_table[] = {
 	{ NULL,	"scp-sys-md1-main"},
@@ -827,23 +828,6 @@ static int md_cd_power_off(struct ccci_modem *md, unsigned int timeout)
 	return ret;
 }
 
-void ccci_modem_plt_resume(struct ccci_modem *md)
-{
-	CCCI_NORMAL_LOG(0, TAG, "[%s] md->hif_flag = %d\n",
-			__func__, md->hif_flag);
-
-	//if (md->hif_flag & (1 << CLDMA_HIF_ID))
-	//	ccci_cldma_restore_reg(md);
-}
-
-int ccci_modem_plt_suspend(struct ccci_modem *md)
-{
-	CCCI_NORMAL_LOG(0, TAG, "[%s] md->hif_flag = %d\n",
-			__func__, md->hif_flag);
-
-	return 0;
-}
-
 int ccci_modem_remove(struct platform_device *dev)
 {
 	return 0;
@@ -904,5 +888,50 @@ int ccci_modem_pm_restore_noirq(struct device *device)
 	irq_set_irq_type(md_ctrl->md_wdt_irq_id, IRQF_TRIGGER_RISING);
 #endif
 	return 0;
+}
+
+void ccci_hif_cldma_restore_reg(struct ccci_modem *md)
+{
+}
+
+void ccci_modem_restore_reg(struct ccci_modem *md)
+{
+	enum MD_STATE md_state = ccci_fsm_get_md_state(md->index);
+
+	if (md_state == GATED || md_state == WAITING_TO_STOP ||
+		md_state == INVALID) {
+		CCCI_NORMAL_LOG(md->index, TAG,
+			"Resume no need restore for md_state=%d\n", md_state);
+		return;
+	}
+
+	if (md->hif_flag & (1 << CLDMA_HIF_ID))
+		ccci_hif_cldma_restore_reg(md);
+
+	ccci_hif_resume(md->index, md->hif_flag);
+}
+
+int ccci_modem_plt_suspend(struct ccci_modem *md)
+{
+	if (md != NULL)
+		ccci_hif_suspend(md->index, md->hif_flag);
+	return 0;
+}
+
+void ccci_modem_plt_resume(struct ccci_modem *md)
+{
+	CCCI_DEBUG_LOG(0, TAG, "%s\n", __func__);
+	if (md != NULL)
+		ccci_modem_restore_reg(md);
+}
+
+int ccci_modem_suspend_noirq(struct device *dev)
+{
+	return dpmaif_suspend_noirq(dev);
+}
+
+int ccci_modem_resume_noirq(struct device *dev)
+{
+	return dpmaif_resume_noirq(dev);
 }
 

@@ -20,6 +20,10 @@
 #include "ccci_modem.h"
 #include "ccci_swtp.h"
 #include "ccci_fsm.h"
+//+ bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
+#include <linux/proc_fs.h>
+static unsigned int swtp_gpio_value=0;
+//- bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
 
 /* must keep ARRAY_SIZE(swtp_of_match) = ARRAY_SIZE(irq_name) */
 const struct of_device_id swtp_of_match[] = {
@@ -30,7 +34,6 @@ const struct of_device_id swtp_of_match[] = {
 	{ .compatible = SWTP4_COMPATIBLE_DEVICE_ID,},
 	{},
 };
-
 static const char irq_name[][16] = {
 	"swtp0-eint",
 	"swtp1-eint",
@@ -60,8 +63,14 @@ static int swtp_send_tx_power(struct swtp_t *swtp)
 	ret = exec_ccci_kern_func_by_md_id(swtp->md_id, ID_UPDATE_TX_POWER,
 		(char *)&swtp->tx_power_mode, sizeof(swtp->tx_power_mode));
 	power_mode = swtp->tx_power_mode;
+//+checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
+        CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
+			"wttest0-swtp->tx_power_mode = %d\n", swtp->tx_power_mode);
 	spin_unlock_irqrestore(&swtp->spinlock, flags);
-
+        CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
+			"%s to MD%d,state=%d,ret=%d wttest\n",
+			__func__, swtp->md_id + 1, power_mode, ret);
+//-checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
 	if (ret != 0)
 		CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
 			"%s to MD%d,state=%d,ret=%d\n",
@@ -106,15 +115,40 @@ static int swtp_switch_state(int irq, struct swtp_t *swtp)
 		swtp->gpio_state[i] = SWTP_EINT_PIN_PLUG_IN;
 
 	swtp->tx_power_mode = SWTP_NO_TX_POWER;
-	for (i = 0; i < MAX_PIN_NUM; i++) {
+//+checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
+         CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
+			"wttest1-swtp-%s>>tx_power_mode = %d,swtp->gpio_state[0]=%d\n", __func__,swtp->tx_power_mode,swtp->gpio_state[0]);
+         CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
+			"wttest2-swtp-%s>>tx_power_mode = %d,swtp->gpio_state[1]=%d\n", __func__,swtp->tx_power_mode,swtp->gpio_state[1]);
+//+bug693519  Modify the SWTP configuration chenduoyin.wt 2021.09.27
+       if (swtp->gpio_state[0] == SWTP_EINT_PIN_PLUG_IN)
+//+bug693519 Modify the SWTP configuration chenduoyin.wt 2021.09.27
+       {
+               swtp->tx_power_mode = SWTP_DO_TX_POWER;
+               CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
+			"wttest3-swtp-%s>>tx_power_mode =SWTP_DO_TX_POWER= %d\n", __func__,swtp->tx_power_mode);
+        }
+        else
+        {
+               swtp->tx_power_mode = SWTP_NO_TX_POWER;
+                CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,
+			"wttest4-swtp-%s>>tx_power_mode =SWTP_NO_TX_POWER= %d\n", __func__,swtp->tx_power_mode);
+        }
+	/*
+        for (i = 0; i < MAX_PIN_NUM; i++) {
 		if (swtp->gpio_state[i] == SWTP_EINT_PIN_PLUG_IN) {
 			swtp->tx_power_mode = SWTP_DO_TX_POWER;
 			break;
 		}
 	}
-
+    */
 	inject_pin_status_event(swtp->curr_mode, rf_name);
 	spin_unlock_irqrestore(&swtp->spinlock, flags);
+        CCCI_LEGACY_ERR_LOG(swtp->md_id, SYS,"wttest5-swtp->tx_power_mode = %d\n", swtp->tx_power_mode);
+//-checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
+//+ bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
+    swtp_gpio_value = !(swtp->tx_power_mode);
+//- bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
 
 	return swtp->tx_power_mode;
 }
@@ -290,15 +324,53 @@ SWTP_INIT_END:
 
 	return;
 }
+//+ bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
+static int swtp_gpio_show(struct seq_file *m, void *v)
+{
+	seq_printf(m,"%d\n", swtp_gpio_value);
+	return 0;
+}
+
+static int swtp_gpio_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, swtp_gpio_show, NULL);
+}
+
+static const struct file_operations swtp_gpio_fops = {
+	.open    = swtp_gpio_proc_open,
+	.read    = seq_read,
+	.llseek  = seq_lseek,
+	.release = single_release,
+};
+
+static void swtp_gpio_create_proc(void)
+{
+	proc_create("swtp_status_value", 0444, NULL, &swtp_gpio_fops);
+}
+//-bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
 
 int swtp_init(int md_id)
 {
+//+checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
+	int  ret = 0;
+//-checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
 	/* parameter check */
 	if (md_id < 0 || md_id >= SWTP_MAX_SUPPORT_MD) {
 		CCCI_LEGACY_ERR_LOG(-1, SYS,
 			"%s: invalid md_id = %d\n", __func__, md_id);
 		return -1;
 	}
+//+checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
+	if (ARRAY_SIZE(swtp_of_match) < MAX_PIN_NUM ||
+		ARRAY_SIZE(irq_name) < MAX_PIN_NUM) {
+		ret = -5;
+		CCCI_LEGACY_ERR_LOG(-1, SYS,
+			"%s: invalid array count = %d(of_match), %d(irq_name)\n",
+			__func__, ARRAY_SIZE(swtp_of_match),
+			ARRAY_SIZE(irq_name));
+		return ret;
+	}
+//-checklist 95521 Modify the SWTP configuration chenduoyin.wt 2021.08.19
 	/* init woke setting */
 	swtp_data[md_id].md_id = md_id;
 
@@ -316,5 +388,8 @@ int swtp_init(int md_id)
 
 	CCCI_BOOTUP_LOG(md_id, SYS, "%s end, init_delayed_work scheduled\n",
 		__func__);
+    //+bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
+	swtp_gpio_create_proc();
+    //-bug 682308  chenduoyin.wt 2021.09.06  add swtp proc
 	return 0;
 }
