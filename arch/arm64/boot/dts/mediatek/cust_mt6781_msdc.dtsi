@@ -32,16 +32,6 @@
 &pio {
 	mmc0_pins_default: mmc0default {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO72__FUNC_MSDC0_DAT0>,
-				 <PINMUX_GPIO73__FUNC_MSDC0_DAT1>,
-				 <PINMUX_GPIO74__FUNC_MSDC0_DAT2>,
-				 <PINMUX_GPIO75__FUNC_MSDC0_DAT3>,
-				 <PINMUX_GPIO76__FUNC_MSDC0_DAT4>,
-				 <PINMUX_GPIO77__FUNC_MSDC0_DAT5>,
-				 <PINMUX_GPIO78__FUNC_MSDC0_DAT6>,
-				 <PINMUX_GPIO79__FUNC_MSDC0_DAT7>,
-				 <PINMUX_GPIO70__FUNC_MSDC0_CMD>;
-			input-enable;
 		};
 		pins_clk {
 			pinmux = <PINMUX_GPIO69__FUNC_MSDC0_CLK>;
@@ -52,17 +42,6 @@
 	};
 	mmc0_pins_uhs: mmc0@0{
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO72__FUNC_MSDC0_DAT0>,
-				 <PINMUX_GPIO73__FUNC_MSDC0_DAT1>,
-				 <PINMUX_GPIO74__FUNC_MSDC0_DAT2>,
-				 <PINMUX_GPIO75__FUNC_MSDC0_DAT3>,
-				 <PINMUX_GPIO76__FUNC_MSDC0_DAT4>,
-				 <PINMUX_GPIO77__FUNC_MSDC0_DAT5>,
-				 <PINMUX_GPIO78__FUNC_MSDC0_DAT6>,
-				 <PINMUX_GPIO79__FUNC_MSDC0_DAT7>,
-				 <PINMUX_GPIO70__FUNC_MSDC0_CMD>;
-			input-enable;
-			drive-strength = <4>;
 		};
 		pins_clk {
 			pinmux = <PINMUX_GPIO69__FUNC_MSDC0_CLK>;
@@ -95,7 +74,7 @@
 	sd-uhs-sdr104;
 	sd-uhs-ddr50;
 	cd-debounce-delay-ms = <2000>;
-	cd-gpios = <&pio 9 GPIO_ACTIVE_LOW>;
+	cd-gpios = <&pio 9 GPIO_ACTIVE_HIGH>;
 	vmmc-supply = <&mt_pmic_vmch_ldo_reg>;
 	vqmmc-supply = <&mt_pmic_vmc_ldo_reg>;
 	no-mmc;
