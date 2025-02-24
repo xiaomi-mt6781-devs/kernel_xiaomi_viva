@@ -5,6 +5,7 @@
 
 #ifndef __SCP_CM4_H
 #define __SCP_CM4_H
+#include <linux/notifier.h>
 
 /* scp Core ID definition*/
 enum scp_core_id {
@@ -51,6 +52,7 @@ enum ipi_id {
 	IPI_SCPCTL,
 	IPI_SCP_LOG_FILTER = 33,
 	IPI_SENSOR_INIT_START = 34,
+	IPI_ELLIPTIC,
 	SCP_NR_IPI,
 };
 
@@ -93,6 +95,7 @@ enum scp_reserve_mem_id_t {
 	VOW_BARGEIN_MEM_ID,
 	SCP_DRV_PARAMS_MEM_ID,
 	ULTRA_MEM_ID,
+	SCP_ELLIPTIC_DEBUG_MEM,
 	NUMS_MEM_ID,
 };
 

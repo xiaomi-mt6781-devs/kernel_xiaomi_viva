@@ -7,6 +7,10 @@
 #define __SCP_EXCEP_H__
 
 #include <linux/sizes.h>
+#include "scp_helper.h"
+#include "scp_feature_define.h"
+#include "scp_ipi.h"
+
 
 #define AED_LOG_PRINT_SIZE	SZ_16K
 #define SCP_LOCK_OFS	0xE0
