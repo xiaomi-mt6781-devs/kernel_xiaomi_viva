@@ -9,9 +9,12 @@
 #include <linux/compat.h>
 #include "scp_helper.h"
 #include "scp_ipi.h"
+#include "audio_ipi_platform.h"
 //#include "audio_ultra_msg_id.h"
 #include "ultra_ipi.h"
+#include "audio_task_manager.h"
 #include "mtk-base-afe.h"
+#include "mtk-scp-ultra-platform-mem-control.h"
 
 
 /* don't use this directly if not necessary */

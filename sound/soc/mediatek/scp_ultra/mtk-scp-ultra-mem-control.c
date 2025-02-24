@@ -7,14 +7,18 @@
 #include "mtk-base-afe.h"
 #include "mtk-base-scp-ultra.h"
 #include "mtk-afe-fe-dai.h"
+#include "audio_buf.h"
 #include <sound/soc.h>
 #include <linux/device.h>
 #include <linux/compat.h>
 #include <linux/io.h>
 #include "scp_helper.h"
 #include "scp_ipi.h"
+#include "audio_ipi_platform.h"
 #include "mtk-sram-manager.h"
+#include "mtk-scp-ultra-platform-mem-control.h"
 #include "audio_ultra_msg_id.h"
+#include "audio_buf.h"
 
 int mtk_scp_ultra_reserved_dram_init(void)
 {
@@ -182,3 +186,4 @@ int mtk_scp_ultra_allocate_mem(struct snd_pcm_substream *substream,
 }
 EXPORT_SYMBOL_GPL(mtk_scp_ultra_allocate_mem);
 late_initcall(mtk_scp_ultra_reserved_dram_init);
+

@@ -19,10 +19,14 @@
 #include "scp_excep.h"
 #include "audio_ultra_msg_id.h"
 #include "mtk-scp-ultra-mem-control.h"
+#include "audio_task_manager.h"
+#include "audio_task_manager.h"
+#include "mtk-scp-ultra-platform-mem-control.h"
 #include "mtk-scp-ultra-platform-driver.h"
 #include "mtk-base-scp-ultra.h"
 #include "mtk-scp-ultra-common.h"
 #include "mtk-base-afe.h"
+#include "audio_buf.h"
 #include "ultra_ipi.h"
 #include "mtk-scp-ultra_dump.h"
 #include "scp_feature_define.h"
@@ -351,7 +355,7 @@ static int mtk_scp_ultra_engine_state_set(struct snd_kcontrol *kcontrol,
 		}
 		return 0;
 
-	case SCP_ULTRA_STATE_OFF:
+    case SCP_ULTRA_STATE_OFF:
 		ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_OFF,
 			       false,
 			       0,
@@ -465,13 +469,14 @@ static int mtk_scp_ultra_pcm_open(struct snd_pcm_substream *substream)
 
 	return 0;
 }
+
 static int mtk_scp_ultra_pcm_start(struct snd_pcm_substream *substream)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_component *component =
-		snd_soc_rtdcom_lookup(rtd, ULTRA_PCM_NAME);
+    struct snd_soc_component *component =
+            snd_soc_rtdcom_lookup(rtd, ULTRA_PCM_NAME);
 	struct mtk_base_scp_ultra *scp_ultra =
-		snd_soc_component_get_drvdata(component);
+			snd_soc_component_get_drvdata(component);
 	struct mtk_base_scp_ultra_mem *ultra_mem = &scp_ultra->ultra_mem;
 	struct mtk_base_afe *afe = ultra_get_afe_base();
 	struct mtk_base_afe_memif *memif =
@@ -484,7 +489,7 @@ static int mtk_scp_ultra_pcm_start(struct snd_pcm_substream *substream)
 	int irq_id_ul = memiful->irq_usage;
 	struct mtk_base_afe_irq *irqs_ul = &afe->irqs[irq_id_ul];
 	const struct mtk_base_irq_data *irq_data_ul = irqs_ul->irq_data;
-	int counter;
+    int counter;
 
 	/* Set dl&ul irq target to scp */
 	set_afe_dl_irq_target(true);
