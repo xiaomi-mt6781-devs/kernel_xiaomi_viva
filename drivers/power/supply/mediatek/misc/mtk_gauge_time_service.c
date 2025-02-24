@@ -390,6 +390,9 @@ signed int get_dynamic_period(
 
 static int gauge_timer_service_probe(struct platform_device *pdev)
 {
+    if (IS_ENABLED(CONFIG_MTK_DISABLE_GAUGE)) {
+    pr_err("gtime timer wakelock disabled");
+    } else {
 	mutex_init(&gtimer_lock);
 	spin_lock_init(&slock);
 	wlock = wakeup_source_register(NULL, "gtime timer wakelock");
@@ -403,6 +406,7 @@ static int gauge_timer_service_probe(struct platform_device *pdev)
 
 	register_pm_notifier(&gtimer_pm_notifier_block);
 
+    }
 	return 0;
 }
 
