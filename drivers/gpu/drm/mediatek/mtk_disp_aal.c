@@ -64,7 +64,7 @@ struct timeval start, end;
 /* To enable debug log: */
 /* # echo aal_dbg:1 > /sys/kernel/debug/dispsys */
 int aal_dbg_en;
-static int g_max_backlight = 1023;
+static int g_max_backlight = 2047;
 
 static DECLARE_WAIT_QUEUE_HEAD(g_aal_hist_wq);
 static DEFINE_SPINLOCK(g_aal_clock_lock);
@@ -1523,6 +1523,7 @@ int mtk_drm_ioctl_aal_set_param(struct drm_device *dev, void *data,
 	int backlight_value = 0;
 	struct DISP_AAL_PARAM *param = (struct DISP_AAL_PARAM *) data;
 	bool delay_refresh = false;
+
 
 	if (debug_skip_set_param) {
 		pr_notice("skip_set_param for debug\n");
