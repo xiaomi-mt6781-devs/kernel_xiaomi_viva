@@ -659,6 +659,8 @@ struct battery_data {
 	/* Add for Battery Service */
 	int BAT_batt_vol;
 	int BAT_batt_temp;
+	bool CHG_FULL_STATUS;
+	bool FORCE_RECHARGE;
 };
 
 struct BAT_EC_Struct {
@@ -937,8 +939,10 @@ struct mtk_battery {
 	int no_bat_temp_compensate;
 	int enable_tmp_intr_suspend;
 	struct battery_temperature_table rbat;
-
 	struct fgd_cmd_param_t_custom fg_data;
+	bool input_suspend;
+	bool charging_call_state;
+	int mtbf_current;
 };
 
 

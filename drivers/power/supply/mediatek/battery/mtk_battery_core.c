@@ -72,14 +72,14 @@
 #include <mtk_battery_table.h>
 #include "simulator_kernel.h"
 #endif
+#include <linux/hardware_info.h>
 
 
-
+#define    MTK_GET_BATTERY_ID_BY_AUTH
 /* ============================================================ */
 /* global variable */
 /* ============================================================ */
 struct mtk_battery gm;
-
 /* ============================================================ */
 /* gauge hal interface */
 /* ============================================================ */
@@ -117,6 +117,8 @@ bool gauge_get_current(int *bat_current)
 int gauge_get_average_current(bool *valid)
 {
 	int iavg = 0;
+	int ret = 0;
+#if 0	
 	int ver = gauge_get_hw_version();
 
 	if (is_fg_disabled())
@@ -128,7 +130,22 @@ int gauge_get_average_current(bool *valid)
 		else
 			gauge_dev_get_average_current(gm.gdev, &iavg, valid);
 	}
+#endif
 
+	struct power_supply *bms = NULL;
+	union power_supply_propval val = {0,};
+	bms = power_supply_get_by_name("bms");
+	if (!bms) {
+  		printk("%s %d: get power supply failed!\n", __func__, __LINE__);
+		return -1;
+	}
+	ret = power_supply_get_property(bms,
+			POWER_SUPPLY_PROP_BQ_AVERAGE_CURRENT, &val);
+	if (ret)
+		printk("Failed to read average current \n");
+	else
+		iavg = val.intval;
+	printk("%s iavg:%d:\n", __func__,iavg);	
 	return iavg;
 }
 
@@ -664,6 +681,29 @@ void fgauge_get_profile_id(void)
 {
 	gm.battery_id = 0;
 }
+
+#elif defined(MTK_GET_BATTERY_ID_BY_AUTH)
+void fgauge_get_profile_id(void)
+{
+	union power_supply_propval pval = {0, };
+	struct power_supply *batt;
+
+	batt = power_supply_get_by_name("bms");
+	if (!batt) {
+		bm_err("Battery id wait\n");
+		gm.battery_id = 2;
+	} else {
+		power_supply_get_property(batt, POWER_SUPPLY_PROP_MI_BATTERY_ID, &pval);
+		if (pval.intval == 0x53) //'s'
+			gm.battery_id = 0;
+		else if (pval.intval == 0x4e) //'N'
+			gm.battery_id = 1;
+		else
+			gm.battery_id = 2;
+		bm_err("Battery id=(%d) mi_batt_id:%d\n",gm.battery_id, pval.intval);
+	}
+}
+
 #else
 void fgauge_get_profile_id(void)
 {
@@ -678,7 +718,36 @@ void fgauge_get_profile_id(void)
 		get_ec()->debug_bat_id_value);
 }
 #endif
+static int battery_id_read(struct seq_file *m, void *v)
+{
+	fgauge_get_profile_id();
+	seq_printf(m, "id:%d\n", gm.battery_id);
+	return 0;
+}
 
+static int battery_id_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, battery_id_read, PDE_DATA(inode));
+}
+
+static const struct file_operations bat_id_fops = {
+	.open = battery_id_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = single_release,
+};
+
+int bat_create_proc_fs(struct platform_device *pdev)
+{
+	struct proc_dir_entry *entry = NULL;
+	struct proc_dir_entry *dir_entry = NULL;
+
+	dir_entry = proc_mkdir("batteryID", NULL);
+	if(dir_entry){
+		entry = proc_create("battery_id",0444,dir_entry,&bat_id_fops);
+	}
+	return 0;
+}
 void fg_custom_init_from_header(void)
 {
 	int i, j;
@@ -1248,6 +1317,7 @@ static void fg_custom_part_ntc_table(const struct device_node *np,
 #endif
 }
 
+bool mtk_shutdown_delay_enable;
 void fg_custom_init_from_dts(struct platform_device *dev)
 {
 	struct device_node *np = dev->dev.of_node;
@@ -1261,6 +1331,8 @@ void fg_custom_init_from_dts(struct platform_device *dev)
 
 	bm_err("%s\n", __func__);
 
+	mtk_shutdown_delay_enable = of_property_read_bool(np, "shutdown-delay-enable");
+	bm_err("mtk_shutdown_delay_enable:%d\n", mtk_shutdown_delay_enable);
 	fg_read_dts_val(np, "MULTI_BATTERY", &(multi_battery), 1);
 	fg_read_dts_val(np, "ACTIVE_TABLE", &(active_table), 1);
 
@@ -2010,11 +2082,19 @@ void notify_fg_dlpt_sd(void)
 	bm_err("[%s]\n", __func__);
 	wakeup_fg_algo(FG_INTR_DLPT_SD);
 }
+#ifndef WT_COMPILE_FACTORY_VERSION
+bool enable_notify_shutdown;
+#endif
 
 void notify_fg_shutdown(void)
 {
 	bm_err("[%s]\n", __func__);
+
+#ifdef WT_COMPILE_FACTORY_VERSION
 	wakeup_fg_algo(FG_INTR_SHUTDOWN);
+#else
+	enable_notify_shutdown = true;
+#endif
 }
 
 void notify_fg_chr_full(void)
@@ -2842,10 +2922,9 @@ void fg_drv_update_hw_status(void)
 
 int battery_update_routine(void *x)
 {
-	int ret = 0;
-	battery_update_psd(&battery_main);
+
 	while (1) {
-		ret = wait_event_interruptible(gm.wait_que,
+		wait_event(gm.wait_que,
 			(gm.fg_update_flag > 0)
 			|| (gm.tracking_cb_flag > 0)
 			|| (gm.onepercent_cb_flag > 0));
@@ -2853,6 +2932,7 @@ int battery_update_routine(void *x)
 			gm.fg_update_flag = 0;
 			fg_drv_update_hw_status();
 		}
+		battery_update(&battery_main);
 		if (gm.tracking_cb_flag > 0) {
 			bm_err("%s wake by tracking_cb_flag:%d\n",
 				__func__, gm.tracking_cb_flag);
@@ -4802,7 +4882,7 @@ void mtk_battery_init(struct platform_device *dev)
 	INIT_LIST_HEAD(&gm.wait_que.list);
 	gm.wait_que.name = "fg_drv_update_hw_status thread";
 #endif
-
+	bat_create_proc_fs(dev);
 }
 
 
