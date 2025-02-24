@@ -668,7 +668,6 @@ static inline int typec_set_polarity(struct tcpc_device *tcpc,
 	tcpc->typec_polarity = polarity;
 	return tcpci_set_polarity(tcpc, polarity);
 }
-
 static inline int typec_set_plug_orient(struct tcpc_device *tcpc,
 				uint8_t pull, bool polarity)
 {
@@ -750,11 +749,10 @@ static inline void typec_custom_src_attached_entry(
 #ifdef CONFIG_TYPEC_CAP_CUSTOM_SRC
 	TYPEC_NEW_STATE(typec_attached_custom_src);
 	tcpc->typec_attach_new = TYPEC_ATTACHED_CUSTOM_SRC;
-
-	tcpc->typec_remote_rp_level = typec_get_cc1();
-
+	tcpc->typec_remote_rp_level = typec_get_cc_res();
 	tcpci_report_power_control(tcpc, true);
-	tcpci_sink_vbus(tcpc, TCP_VBUS_CTRL_TYPEC, TCPC_VBUS_SINK_5V, -1);
+	tcpci_sink_vbus(tcpc, TCP_VBUS_CTRL_TYPEC,
+		TCPC_VBUS_SINK_5V, tcpc->typec_usb_sink_curr);
 #endif	/* CONFIG_TYPEC_CAP_CUSTOM_SRC */
 }
 
@@ -831,11 +829,19 @@ static inline bool typec_role_is_try_src(
 
 static inline void typec_try_src_entry(struct tcpc_device *tcpc)
 {
+	uint32_t chip_id;
+	int rv = 0;
+
 	TYPEC_NEW_STATE(typec_try_src);
 	tcpc->typec_drp_try_timeout = false;
 
 	tcpci_set_cc(tcpc, TYPEC_CC_RP);
 	tcpc_enable_timer(tcpc, TYPEC_TRY_TIMER_DRP_TRY);
+
+	rv = tcpci_get_chip_id(tcpc, &chip_id);
+	if (!rv && (SC2150A_DID == chip_id)) {
+		tcpc_typec_handle_cc_change(tcpc);
+	}
 }
 
 static inline void typec_trywait_snk_entry(struct tcpc_device *tcpc)
@@ -890,11 +896,19 @@ static inline bool typec_role_is_try_sink(
 
 static inline void typec_try_snk_entry(struct tcpc_device *tcpc)
 {
-	TYPEC_NEW_STATE(typec_try_snk);
-	tcpc->typec_drp_try_timeout = false;
+	int rv = 0;
+	uint32_t chip_id;
 
-	tcpci_set_cc(tcpc, TYPEC_CC_RD);
-	tcpc_enable_timer(tcpc, TYPEC_TRY_TIMER_DRP_TRY);
+ 	TYPEC_NEW_STATE(typec_try_snk);
+ 	tcpc->typec_drp_try_timeout = false;
+ 
+ 	tcpci_set_cc(tcpc, TYPEC_CC_RD);
+ 	tcpc_enable_timer(tcpc, TYPEC_TRY_TIMER_DRP_TRY);
+
+	rv = tcpci_get_chip_id(tcpc, &chip_id);
+	if (!rv && (SC2150A_DID == chip_id))  {
+		tcpc_typec_handle_cc_change(tcpc);
+	}
 }
 
 static inline void typec_trywait_src_entry(struct tcpc_device *tcpc)
@@ -1546,6 +1560,8 @@ static inline bool typec_handle_cc_changed_entry(struct tcpc_device *tcpc)
 static inline void typec_attach_wait_entry(struct tcpc_device *tcpc)
 {
 	bool as_sink;
+	int rv = 0;
+	uint32_t chip_id;
 #ifdef CONFIG_USB_POWER_DELIVERY
 	struct pd_port *pd_port = &tcpc->pd_port;
 #endif	/* CONFIG_USB_POWER_DELIVERY */
@@ -1616,9 +1632,12 @@ static inline void typec_attach_wait_entry(struct tcpc_device *tcpc)
 	tcpci_notify_attachwait_state(tcpc, as_sink);
 #endif	/* CONFIG_TYPEC_NOTIFY_ATTACHWAIT */
 
-	if (as_sink)
-		TYPEC_NEW_STATE(typec_attachwait_snk);
-	else {
+	rv = tcpci_get_chip_id(tcpc, &chip_id);
+	if (as_sink) {
+ 		TYPEC_NEW_STATE(typec_attachwait_snk);
+		if (!rv && (SC2150A_DID == chip_id))
+			tcpci_set_cc(tcpc, TYPEC_CC_RD);
+	} else {
 		/* Advertise Rp level before Attached.SRC Ellisys 3.1.6359 */
 		tcpci_set_cc(tcpc,
 			TYPEC_CC_PULL(tcpc->typec_local_rp_level, TYPEC_CC_RP));
@@ -2539,6 +2558,7 @@ int tcpc_typec_handle_ps_change(struct tcpc_device *tcpc, int vbus_level)
 			tcpc, vbus_level >= TCPC_VBUS_VALID);
 	}
 #endif	/* CONFIG_TYPEC_CAP_AUDIO_ACC_SINK_VBUS */
+
 
 	if (vbus_level >= TCPC_VBUS_VALID)
 		return typec_handle_vbus_present(tcpc);
