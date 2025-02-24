@@ -1,8 +1,15 @@
-// SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2016 MediaTek Inc.
+ * Copyright (C) 2017 MediaTek Inc.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  */
-
 
 #include "kd_imgsensor.h"
 
@@ -19,9 +26,9 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 			{RST, Vol_Low, 0},
 			{PDN, Vol_Low, 1},
 			{PDN, Vol_High, 4},
-			{DOVDD, Vol_1800, 1},
-			{AVDD, Vol_2800, 1},
 			{DVDD, Vol_1100, 1},
+			{AVDD, Vol_2800, 1},
+			{DOVDD, Vol_1800, 1},
 			{RST, Vol_High, 2},
 			{SensorMCLK, Vol_High, 10},
 		},
@@ -35,9 +42,9 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 			{RST, Vol_Low, 0},
 			{PDN, Vol_Low, 1},
 			{PDN, Vol_High, 4},
-			{DOVDD, Vol_1800, 1},
-			{AVDD, Vol_2800, 1},
 			{DVDD, Vol_1100, 1},
+			{AVDD, Vol_2800, 1},
+			{DOVDD, Vol_1800, 1},
 			{RST, Vol_High, 2},
 			{SensorMCLK, Vol_High, 10},
 		},
@@ -49,11 +56,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		SENSOR_DRVNAME_HI1634Q_FRONT_OFILM_MIPI_RAW,
 		{
 			{RST, Vol_Low, 1},
-			{DOVDD, Vol_1800, 0},
-			{AVDD, Vol_2800, 0},
-			{DVDD, Vol_1200, 0},
-			{RST, Vol_High, 2},
+			{DOVDD, Vol_1800, 1},
+			{AVDD, Vol_2800, 1},
+			{DVDD, Vol_1200, 1},
 			{SensorMCLK, Vol_High, 1},
+			{RST, Vol_High, 2},
 		},
 	},
 #endif
@@ -63,11 +70,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		SENSOR_DRVNAME_HI1634Q_FRONT_QTECH_MIPI_RAW,
 		{
 			{RST, Vol_Low, 1},
-			{DOVDD, Vol_1800, 0},
-			{AVDD, Vol_2800, 0},
-			{DVDD, Vol_1200, 0},
-			{RST, Vol_High, 2},
+			{DOVDD, Vol_1800, 1},
+			{AVDD, Vol_2800, 1},
+			{DVDD, Vol_1200, 1},
 			{SensorMCLK, Vol_High, 1},
+			{RST, Vol_High, 2},
 		},
 	},
 #endif
@@ -105,11 +112,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		SENSOR_DRVNAME_OV02B1B_DEPTH_SUNNY_MIPI_RAW,
 		{
 			{RST, Vol_Low, 1},
+			{SensorMCLK, Vol_Low, 1},
 			{DOVDD, Vol_1800, 0},
-			{AVDD, Vol_2800, 0},
-			{PDN, Vol_High, 5},
+			{AVDD, Vol_2800, 9},
+			{SensorMCLK, Vol_High, 5},
 			{RST, Vol_High, 5},
-			{SensorMCLK, Vol_High, 1},
 		},
     },
 #endif
@@ -119,11 +126,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 		SENSOR_DRVNAME_OV02B1B_DEPTH_TRULY_MIPI_RAW,
 		{
 			{RST, Vol_Low, 1},
+			{SensorMCLK, Vol_Low, 1},
 			{DOVDD, Vol_1800, 0},
-			{AVDD, Vol_2800, 0},
-			{PDN, Vol_High, 5},
+			{AVDD, Vol_2800, 9},
+			{SensorMCLK, Vol_High, 5},
 			{RST, Vol_High, 5},
-			{SensorMCLK, Vol_High, 1},
 		},
     },
 #endif
@@ -132,11 +139,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 	{
 		SENSOR_DRVNAME_GC02M1_MACRO_OFILM_MIPI_RAW,
 		{
-			{RST, Vol_Low, 0},
-			{DOVDD, Vol_1200, 1},
-			{AVDD, Vol_2800, 0},
-			{RST, Vol_High, 1},
-			{SensorMCLK, Vol_High, 1},
+			{SensorMCLK, Vol_High, 2},
+			{RST, Vol_Low, 2},
+			{DOVDD, Vol_1800, 2},
+			{AVDD, Vol_2800, 2},
+			{RST, Vol_High, 0},
 		},
 	},
 #endif
@@ -145,11 +152,11 @@ struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
 	{
 		SENSOR_DRVNAME_GC02M1_MACRO_AAC_MIPI_RAW,
 		{
-			{RST, Vol_Low, 0},
-			{DOVDD, Vol_1200, 1},
-			{AVDD, Vol_2800, 0},
-			{RST, Vol_High, 1},
-			{SensorMCLK, Vol_High, 1},
+			{SensorMCLK, Vol_High, 2},
+			{RST, Vol_Low, 2},
+			{DOVDD, Vol_1800, 2},
+			{AVDD, Vol_2800, 2},
+			{RST, Vol_High, 0},
 		},
 	},
 #endif
