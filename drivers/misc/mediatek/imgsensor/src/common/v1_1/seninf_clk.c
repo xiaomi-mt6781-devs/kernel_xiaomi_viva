@@ -5,6 +5,7 @@
 
 
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 
 #include "seninf_clk.h"
 

@@ -2303,7 +2303,7 @@ CAMERA_HW_Ioctl_EXIT:
 
 	return i4RetValue;
 }
-
+int open_count = 0;
 static int imgsensor_open(struct inode *a_pstInode, struct file *a_pstFile)
 {
 	struct IMGSENSOR *pimgsensor = &gimgsensor;
@@ -2311,6 +2311,7 @@ static int imgsensor_open(struct inode *a_pstInode, struct file *a_pstFile)
 	mutex_lock(&gimgsensor_open_mutex);
 
 	atomic_inc(&pimgsensor->imgsensor_open_cnt);
+	open_count = atomic_read(&pimgsensor->imgsensor_open_cnt);
 	PK_DBG("%s %d\n", __func__,
 		atomic_read(&pimgsensor->imgsensor_open_cnt));
 
@@ -2335,6 +2336,7 @@ static int imgsensor_release(struct inode *a_pstInode, struct file *a_pstFile)
 	mutex_lock(&gimgsensor_open_mutex);
 
 	atomic_dec(&pimgsensor->imgsensor_open_cnt);
+	open_count = atomic_read(&pimgsensor->imgsensor_open_cnt);
 	if (atomic_read(&pimgsensor->imgsensor_open_cnt) == 0) {
 		imgsensor_hw_release_all(&pimgsensor->hw);
 
