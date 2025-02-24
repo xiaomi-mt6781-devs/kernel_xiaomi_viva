@@ -61,4 +61,5 @@ obj-$(CONFIG_MISC_RTSX)		+= cardreader/
 obj-$(CONFIG_UID_SYS_STATS)	+= uid_sys_stats.o
 obj-y				+= mediatek/
 obj-$(CONFIG_SIMTRAY_STATUS) += simtray.o
+obj-y                       += hardware_info.o
 
