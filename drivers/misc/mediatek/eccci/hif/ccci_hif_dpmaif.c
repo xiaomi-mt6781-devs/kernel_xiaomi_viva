@@ -31,6 +31,11 @@
 #include <linux/tcp.h>
 #include <linux/ipv6.h>
 #include <net/ipv6.h>
+#include <linux/arm-smccc.h>
+#include <linux/soc/mediatek/mtk_sip_svc.h>
+#if defined(CONFIG_MTK_AEE_FEATURE)
+#include <mt-plat/aee.h>
+#endif
 
 #include "ccci_core.h"
 #include "modem_sys.h"
@@ -40,6 +45,7 @@
 #include "md_sys1_platform.h"
 #include "dpmaif_reg.h"
 #include "dpmaif_drv.h"
+#include "modem_secure_base.h"
 #include "modem_reg_base.h"
 #include "ccci_fsm.h"
 #include "ccci_port.h"
@@ -134,7 +140,7 @@ static void dpmaif_dump_register(struct hif_dpmaif_ctrl *hif_ctrl, int buf_type)
 #ifdef MT6297
 		DPMAIF_PD_UL_ADD_DESC_CH4 - DPMAIF_PD_UL_ADD_DESC + 4);
 #else
-		DPMAIF_PD_UL_ADD_DESC_CH - DPMAIF_PD_UL_ADD_DESC + 4);
+		DPMAIF_PD_UL_ADD_DESC_CH3 - DPMAIF_PD_UL_ADD_DESC + 4);
 #endif
 	CCCI_BUF_LOG_TAG(hif_ctrl->md_id, buf_type, TAG,
 		"dump AP DPMAIF Tx ao register\n");
@@ -3786,11 +3792,20 @@ int dpmaif_late_init(unsigned char hif_id)
 	struct dpmaif_tx_queue *tx_q = NULL;
 	int ret, i;
 	unsigned int reg_val;
+#ifndef MT6297
+	struct arm_smccc_res res = {0};
+#endif
+
 
 #ifdef DPMAIF_DEBUG_LOG
 	CCCI_HISTORY_TAG_LOG(-1, TAG, "dpmaif:%s\n", __func__);
 #else
 	CCCI_DEBUG_LOG(-1, TAG, "dpmaif:%s\n", __func__);
+#endif
+#ifndef MT6297
+	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, DPMAIF_RESET_PERM,
+			1, 0, 0, 0, 0, 0, &res);
+	CCCI_NORMAL_LOG(-1, TAG, "late init: 0x%lx\n", res.a0);
 #endif
 	/* set sw control data flow cb: isr/tx/rx/etc. */
 	/* request IRQ */
@@ -4332,6 +4347,7 @@ void dpmaif_hw_reset(unsigned char md_id)
 	unsigned int reg_value = 0;
 #ifndef MT6297
 	int count = 0;
+	struct arm_smccc_res res = {0};
 #endif
 
 	/* pre- DPMAIF HW reset: bus-protect */
@@ -4409,6 +4425,11 @@ void dpmaif_hw_reset(unsigned char md_id)
 	CCCI_DEBUG_LOG(md_id, TAG, "%s:done\n", __func__);
 
 #ifndef MT6297
+	arm_smccc_smc(MTK_SIP_KERNEL_CCCI_CONTROL, DPMAIF_RESET_PERM,
+		1, 0, 0, 0, 0, 0, &res);
+	CCCI_NORMAL_LOG(md_id, TAG, "%s done: 0x%lx, 0x%x\n", __func__,
+		res.a0,	DPMA_READ_PD_UL(DPMAIF_ULQSAR_n(0)));
+
 	/* post- DPMAIF HW reset: bus-protect */
 	regmap_write(dpmaif_ctrl->plat_val.infra_ao_base,
 		INFRA_TOPAXI_PROTECTEN_1_CLR,
@@ -4906,5 +4927,4 @@ module_exit(ccci_hif_dpmaif_exit);
 MODULE_AUTHOR("ccci");
 MODULE_DESCRIPTION("ccci hif dpmaif driver");
 MODULE_LICENSE("GPL");
-
 
