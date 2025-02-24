@@ -981,7 +981,9 @@ static int __init pbm_module_init(void)
 
 	pm_notifier(_mt_pbm_pm_callback, 0);
 
+#ifndef CONFIG_MTK_DISABLE_GAUGE
 	register_dlpt_notify(&kicker_pbm_by_dlpt, DLPT_PRIO_PBM);
+#endif
 	ret = create_pbm_kthread();
 	if (ret) {
 		pr_notice("FAILED TO CREATE PBM KTHREAD\n");
