@@ -166,6 +166,10 @@ enum tcpc_rp_lvl {
 	TYPEC_RP_RSV,
 };
 
+
+
+
+
 enum tcpc_cc_pull {
 	TYPEC_CC_RA = 0,
 	TYPEC_CC_RP = 1,
@@ -173,10 +177,13 @@ enum tcpc_cc_pull {
 	TYPEC_CC_OPEN = 3,
 	TYPEC_CC_DRP = 4,		/* from Rd */
 
-	TYPEC_CC_RP_DFT = TYPEC_CC_PULL(TYPEC_RP_DFT, TYPEC_CC_RP),
-	TYPEC_CC_RP_1_5 = TYPEC_CC_PULL(TYPEC_RP_1_5, TYPEC_CC_RP),
-	TYPEC_CC_RP_3_0 = TYPEC_CC_PULL(TYPEC_RP_3_0, TYPEC_CC_RP),
+    TYPEC_CC_RP_DFT = TYPEC_CC_PULL(TYPEC_RP_DFT, TYPEC_CC_RP),
+    TYPEC_CC_RP_1_5 = TYPEC_CC_PULL(TYPEC_RP_1_5, TYPEC_CC_RP),
+    TYPEC_CC_RP_3_0 = TYPEC_CC_PULL(TYPEC_RP_3_0, TYPEC_CC_RP),
 
+ //	TYPEC_CC_DRP_DFT = 4,		/* 0x00 + 4 */
+ //	TYPEC_CC_DRP_1_5 = 12,		/* 0x08 + 4 */
+ //	TYPEC_CC_DRP_3_0 = 20,		/* 0x10 + 4 */
 	TYPEC_CC_DRP_DFT = TYPEC_CC_PULL(TYPEC_RP_DFT, TYPEC_CC_DRP),
 	TYPEC_CC_DRP_1_5 = TYPEC_CC_PULL(TYPEC_RP_1_5, TYPEC_CC_DRP),
 	TYPEC_CC_DRP_3_0 = TYPEC_CC_PULL(TYPEC_RP_3_0, TYPEC_CC_DRP),
@@ -199,9 +206,11 @@ struct tcpc_ops {
 	int (*init)(struct tcpc_device *tcpc, bool sw_reset);
 	int (*init_alert_mask)(struct tcpc_device *tcpc);
 	int (*alert_status_clear)(struct tcpc_device *tcpc, uint32_t mask);
+//  int (*get_chip_id)(struct tcpc_device *tcpc, uint32_t *chip_id);
 	int (*fault_status_clear)(struct tcpc_device *tcpc, uint8_t status);
 	int (*set_alert_mask)(struct tcpc_device *tcpc, uint32_t mask);
 	int (*get_alert_mask)(struct tcpc_device *tcpc, uint32_t *mask);
+	int (*get_chip_id)(struct tcpc_device *tcpc, uint32_t *chip_id);
 	int (*get_alert_status)(struct tcpc_device *tcpc, uint32_t *alert);
 	int (*get_power_status)(struct tcpc_device *tcpc, uint16_t *pwr_status);
 	int (*get_fault_status)(struct tcpc_device *tcpc, uint8_t *status);
