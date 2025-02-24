@@ -10,6 +10,9 @@
 #ifndef _MTK_SCP_ULTRA_BASE_H_
 #define _MTK_SCP_ULTRA_BASE_H_
 
+#include "audio_buf.h"
+#include <audio_messenger_ipi.h>
+#include "audio_task.h"
 #include <sound/soc.h>
 
 
@@ -25,10 +28,14 @@ struct audio_ultra_dram {
 	unsigned long long size;
 	unsigned char *vir_addr;
 };
+struct scp_ultra_dump_ops {
+	void (*ultra_dump_callback)(struct ipi_msg_t *ipi_msg);
+};
 
 struct mtk_base_scp_ultra_dump {
 	bool dump_flag;
 	struct audio_ultra_dram dump_resv_mem;
+	struct scp_ultra_dump_ops *dump_ops;
 };
 
 struct mtk_base_scp_ultra_mem {

@@ -42,6 +42,12 @@
 #define DUMP_ULTRA_PCM_DATA_PATH "/data/vendor/audiohal/audio_dump"
 #define FRAME_BUF_SIZE (8192)
 static struct wakeup_source *wakelock_ultra_dump_lock;
+#include "audio_log.h"
+#include "audio_assert.h"
+
+//#include "audio_task_manager.h"
+#include <audio_ipi_dma.h>
+#include "audio_ultra_msg_id.h"
 
 enum { /* dump_data_t */
 	DUMP_PCM_IN = 0,

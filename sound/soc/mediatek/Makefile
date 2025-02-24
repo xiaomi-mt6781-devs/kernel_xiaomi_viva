@@ -135,7 +135,6 @@ endif
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/$(AUDIO_PLATFORM)/
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/audio_ipi/$(AUDIO_PLATFORM)/
 
-
 # Common include path
 subdir-ccflags-y += -I$(src)/common_int
 
