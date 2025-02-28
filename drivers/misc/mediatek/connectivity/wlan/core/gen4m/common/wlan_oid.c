@@ -72,6 +72,7 @@
 #include "precomp.h"
 #include "mgmt/rsn.h"
 #include "debug.h"
+#include <linux/kmemleak.h>
 
 /******************************************************************************
  *                              C O N S T A N T S
