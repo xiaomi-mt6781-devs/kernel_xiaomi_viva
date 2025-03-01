@@ -87,7 +87,7 @@ void GPS_fwlog_ctrl(bool on);
 
 #ifdef CONFIG_GPSL5_SUPPORT
 /* stp_chrdev_gps2 */
-extern struct wakeup_source gps2_wake_lock;
+extern struct wakeup_source *gps2_wake_lock;
 extern struct semaphore wr_mtx2, rd_mtx2, status_mtx2;
 extern const struct file_operations GPS2_fops;
 #endif

@@ -86,7 +86,7 @@ do { if (g2DbgLevel >= GPS2_LOG_DBG)	\
 		pr_info(PFX2 "<%s> <%d>\n", __func__, __LINE__);	\
 } while (0)
 
-struct wakeup_source gps2_wake_lock;
+struct wakeup_source *gps2_wake_lock;
 static unsigned char wake_lock_acquired2;   /* default: 0 */
 
 #if (defined(CONFIG_MTK_GMO_RAM_OPTIMIZE) && !defined(CONFIG_MTK_ENG_BUILD))
@@ -163,7 +163,7 @@ static void gps2_hold_wake_lock(int hold)
 	if (hold == 1) {
 		if (!wake_lock_acquired2) {
 			GPS2_DBG_FUNC("acquire gps2 wake_lock acquired = %d\n", wake_lock_acquired2);
-			__pm_stay_awake(&gps2_wake_lock);
+			__pm_stay_awake(gps2_wake_lock);
 			wake_lock_acquired2 = 1;
 		} else {
 			GPS2_DBG_FUNC("acquire gps2 wake_lock acquired = %d (do nothing)\n", wake_lock_acquired2);
@@ -171,7 +171,7 @@ static void gps2_hold_wake_lock(int hold)
 	} else if (hold == 0) {
 		if (wake_lock_acquired2) {
 			GPS2_DBG_FUNC("release gps2 wake_lock acquired = %d\n", wake_lock_acquired2);
-			__pm_relax(&gps2_wake_lock);
+			__pm_relax(gps2_wake_lock);
 			wake_lock_acquired2 = 0;
 		} else {
 			GPS2_DBG_FUNC("release gps2 wake_lock acquired = %d (do nothing)\n", wake_lock_acquired2);
