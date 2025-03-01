@@ -179,10 +179,6 @@ void gps_lna_pin_ctrl(enum gps_data_link_id_enum link_id, bool dsp_is_on, bool f
 
 static int gps_lna_probe(struct platform_device *pdev)
 {
-	struct resource *irq;
-	int i;
-	bool okay;
-
 	g_gps_lna_pinctrl_ptr = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR(g_gps_lna_pinctrl_ptr))
 		GPS_INFO_FUNC("devm_pinctrl_get fail");
