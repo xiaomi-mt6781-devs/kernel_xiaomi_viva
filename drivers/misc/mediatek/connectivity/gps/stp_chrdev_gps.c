@@ -1221,7 +1221,7 @@ static int GPS_init(void)
 	sema_init(&rd_mtx, 1);
 
 #ifdef CONFIG_GPSL5_SUPPORT
-	wakeup_source_init(&gps2_wake_lock, "gpswakelock");
+	gps2_wake_lock = wakeup_source_register(NULL, "gpswakelock");
 
 	sema_init(&status_mtx2, 1);
 	/* init_MUTEX(&wr_mtx); */
