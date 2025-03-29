@@ -38,62 +38,62 @@
  * PN8XT_SET_PWR(1): power on
  * PN8XT_SET_PWR(2): reset and power on with firmware download enabled
  */
-#define PN8XT_SET_PWR      _IOW(NXP_NFC_MAGIC, 0x01, long)
+#define PN8XT_SET_PWR      _IOW(NXP_NFC_MAGIC, 0x01, uint32_t)
 /*
  * SPI Request NFCC to enable ESE power, only in param
  * Only for SPI
  * level 1 = Enable power
  * level 0 = Disable power
  */
-#define PN8XT_SET_SPI_PWR  _IOW(NXP_NFC_MAGIC, 0x02, long)
+#define PN8XT_SET_SPI_PWR  _IOW(NXP_NFC_MAGIC, 0x02, uint32_t)
 
 /* SPI or DWP can call this ioctl to get the current
  * power state of ESE
  *
 */
-#define PN8XT_GET_PWR_STATUS    _IOR(NXP_NFC_MAGIC, 0x03, long)
+#define PN8XT_GET_PWR_STATUS    _IOR(NXP_NFC_MAGIC, 0x03, uint32_t)
 
 /* DWP side this ioctl will be called
  * level 1 = Wired access is enabled/ongoing
  * level 0 = Wired access is disabled/stopped
 */
-#define PN8XT_SET_WIRED_ACCESS _IOW(NXP_NFC_MAGIC, 0x04, long)
+#define PN8XT_SET_WIRED_ACCESS _IOW(NXP_NFC_MAGIC, 0x04, uint32_t)
 
 /*
   NFC Init will call the ioctl to register the PID with the i2c driver
 */
-#define PN8XT_SET_NFC_SERVICE_PID _IOW(NXP_NFC_MAGIC, 0x05, long)
+#define PN8XT_SET_NFC_SERVICE_PID _IOW(NXP_NFC_MAGIC, 0x05, uint32_t)
 
 /*
   NFC and SPI will call the ioctl to get the i2c/spi bus access
 */
-#define PN8XT_GET_ESE_ACCESS _IOW(NXP_NFC_MAGIC, 0x06, long)
+#define PN8XT_GET_ESE_ACCESS _IOW(NXP_NFC_MAGIC, 0x06, uint32_t)
 /*
   NFC and SPI will call the ioctl to update the power scheme
 */
-#define PN8XT_SET_POWER_SCM _IOW(NXP_NFC_MAGIC, 0x07, long)
+#define PN8XT_SET_POWER_SCM _IOW(NXP_NFC_MAGIC, 0x07, uint32_t)
 
 /*
   NFC will call the ioctl to release the svdd protection
 */
-#define PN8XT_REL_SVDD_WAIT _IOW(NXP_NFC_MAGIC, 0x08, long)
+#define PN8XT_REL_SVDD_WAIT _IOW(NXP_NFC_MAGIC, 0x08, uint32_t)
 
 /* SPI or DWP can call this ioctl to get the current
  * power state of ESE
  *
 */
-#define PN8XT_SET_DN_STATUS    _IOW(NXP_NFC_MAGIC, 0x09, long)
+#define PN8XT_SET_DN_STATUS    _IOW(NXP_NFC_MAGIC, 0x09, uint32_t)
 /*
   NFC will call the ioctl to release the dwp on/off protection
 */
 
-#define PN8XT_REL_DWP_WAIT _IOW(NXP_NFC_MAGIC, 0x0A, long)
+#define PN8XT_REL_DWP_WAIT _IOW(NXP_NFC_MAGIC, 0x0A, uint32_t)
 
 /*
   NFC will call the ioctl to start Secure Timer
 */
 
-#define PN8XT_SECURE_TIMER_SESSION _IOW(NXP_NFC_MAGIC, 0x0B, long)
+#define PN8XT_SECURE_TIMER_SESSION _IOW(NXP_NFC_MAGIC, 0x0B, uint32_t)
 
 #define MAX_ESE_ACCESS_TIME_OUT_MS 200
 
