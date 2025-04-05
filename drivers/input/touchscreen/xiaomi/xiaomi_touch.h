@@ -72,6 +72,7 @@ struct xiaomi_touch {
 	struct mutex  mutex;
 	struct mutex  palm_mutex;
 	struct mutex  psensor_mutex;
+	struct mutex  gesture_double_tap_mutex;
 	wait_queue_head_t 	wait_queue;
 };
 
