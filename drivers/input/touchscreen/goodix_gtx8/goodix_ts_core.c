@@ -2446,6 +2446,10 @@ static int gtp_set_cur_value(int gtp_mode, int gtp_value)
 				cd->aod_changed = 0;
 				ts_info("temp_value:%d,aod_changed:%d",temp_value,cd->aod_changed);
 			}
+		case Touch_Doubletap_Mode:
+			/* 0, 1 */
+			temp_value = xiaomi_touch_interfaces.touch_mode[Touch_Doubletap_Mode][SET_CUR_VALUE];
+			wt_gsx_tp_gesture_callback(!!temp_value);
 		default:
 			/* Don't support */
 			break;
