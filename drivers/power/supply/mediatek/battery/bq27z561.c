@@ -1358,7 +1358,6 @@ static int fg_get_property(struct power_supply *psy, enum power_supply_property 
 	int vbat_mv,aver_curr;
 	static bool last_shutdown_delay;
 	union power_supply_propval pval = {0, };
-	pr_err("[%s] psp :%d \n",__func__,psp);
 	switch (psp) {
 	case POWER_SUPPLY_PROP_MODEL_NAME:
 		if (bq->old_hw) {
@@ -1661,7 +1660,6 @@ static int fg_set_property(struct power_supply *psy,
 {
 	struct bq_fg_chip *bq = power_supply_get_drvdata(psy);
 
-	pr_err("[%s] prop :%d \n",__func__,prop);
 	switch (prop) {
 	case POWER_SUPPLY_PROP_TEMP:
 		bq->fake_temp = val->intval;
