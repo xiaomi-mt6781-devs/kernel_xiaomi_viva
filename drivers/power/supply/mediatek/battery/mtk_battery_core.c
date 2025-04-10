@@ -136,16 +136,16 @@ int gauge_get_average_current(bool *valid)
 	union power_supply_propval val = {0,};
 	bms = power_supply_get_by_name("bms");
 	if (!bms) {
-  		printk("%s %d: get power supply failed!\n", __func__, __LINE__);
+  		pr_err("%s %d: get power supply failed!\n", __func__, __LINE__);
 		return -1;
 	}
 	ret = power_supply_get_property(bms,
 			POWER_SUPPLY_PROP_BQ_AVERAGE_CURRENT, &val);
 	if (ret)
-		printk("Failed to read average current \n");
+		pr_err("Failed to read average current \n");
 	else
 		iavg = val.intval;
-	printk("%s iavg:%d:\n", __func__,iavg);	
+
 	return iavg;
 }
 
