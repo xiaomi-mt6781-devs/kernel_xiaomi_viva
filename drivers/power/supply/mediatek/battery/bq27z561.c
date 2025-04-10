@@ -58,11 +58,6 @@ enum print_reason {
 	PR_DEBUG	= BIT(3),
 };
 
-static int debug_mask = PR_OEM;
-module_param_named(
-	debug_mask, debug_mask, int, 0600
-);
-
 #define	INVALID_REG_ADDR	0xFF
 
 #define FG_FLAGS_FD				BIT(4)
@@ -289,12 +284,7 @@ struct bq_fg_chip {
 };
 
 #define bq_dbg(reason, fmt, ...)			\
-	do {						\
-		if (debug_mask & (reason))		\
-			pr_info(fmt, ##__VA_ARGS__);	\
-		else					\
-			pr_debug(fmt, ##__VA_ARGS__);	\
-	} while (0)
+	pr_debug(fmt, ##__VA_ARGS__);
 
 #define I2C_RETRY_MAX			(10)
 #define I2C_RETRY_DELAY			(100)
