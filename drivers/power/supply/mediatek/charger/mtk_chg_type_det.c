@@ -227,8 +227,7 @@ int get_constant_current_max(void)
 	ret = power_supply_get_property(bms,POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX, &propval);
 	if (ret < 0)
   		pr_err("%s: psy type failed, ret = %d\n", __func__, ret);
-  	else
-  		pr_err("%s: current_now = %d\n", __func__, propval.intval);
+	
 	return propval.intval;
 }
 
