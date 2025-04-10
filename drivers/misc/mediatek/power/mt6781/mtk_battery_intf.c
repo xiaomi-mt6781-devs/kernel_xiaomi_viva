@@ -124,8 +124,7 @@ signed int battery_get_FG_bat_voltage(void)
 	ret = power_supply_get_property(bms,POWER_SUPPLY_PROP_VOLTAGE_NOW,&propval);
 	if (ret < 0)
 		pr_err("%s: psy type failed, ret = %d\n", __func__, ret);
-	else
-		pr_err("%s: current_now = %d\n", __func__, propval.intval);
+
 	return propval.intval;
 }
 signed int battery_get_bat_current(void)
@@ -151,8 +150,7 @@ signed int battery_get_bat_current(void)
 	ret = power_supply_get_property(bms,POWER_SUPPLY_PROP_CURRENT_NOW,&propval);
 	if (ret < 0)
 		pr_err("%s: psy type failed, ret = %d\n", __func__, ret);
-	else
-		pr_err("%s: current_now = %d\n", __func__, propval.intval);
+
 	return propval.intval;
 #endif
 }
