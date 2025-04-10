@@ -940,7 +940,7 @@ int SYV690_set_term_current(struct SYV690_device *chgInfo, int curr)
 		iterm = (curr - SC89890H_ITEM_OFFSET) / SC89890H_ITEM_STEP;
 	}
 	ret = SYV690_field_write(chgInfo, F_ITERM, iterm);
-	pr_err(" SYV690_set_term_current  write :%s\n",  ret < 0 ? "failed" : "successfully");
+	pr_debug(" SYV690_set_term_current  write :%s\n",  ret < 0 ? "failed" : "successfully");
 	return ret;
 
 }
@@ -954,7 +954,7 @@ static int SYV690_enable_term(struct SYV690_device *chgInfo, bool enable)
 {
 	int ret = 0;
 	ret = SYV690_field_write(chgInfo, F_TERM_EN, (enable ? 1:0));
-	pr_err(" SYV690_enable_term  write :%s\n",  ret < 0 ? "failed" : "successfully");
+	pr_debug(" SYV690_enable_term  write :%s\n",  ret < 0 ? "failed" : "successfully");
 	return ret;
 }
 EXPORT_SYMBOL_GPL(SYV690_enable_term);
@@ -1349,9 +1349,6 @@ static int SYV690_set_ieoc(struct charger_device *chg_dev, u32 curr)
 static int SYV690_enable_te(struct charger_device *chg_dev, bool en)
 {
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
-
-	pr_err("SYV690_enable_te  = %d\n", en);
-
 	return SYV690_enable_term(chgInfo, en);
 }
 /*
@@ -1419,7 +1416,7 @@ static int SYV690_is_charging_done(struct charger_device *chg_dev, bool *done)
 			}
 		}
 		*done  = (ret == 3);
-		pr_err("SYV690_is_charging_done  = %d \n",ret);
+		pr_debug("SYV690_is_charging_done  = %d \n",ret);
 	}else{
 		pr_err("Failed to get charging_done state!\n");
 	}
