@@ -91,42 +91,6 @@ static DEFINE_MUTEX(leds_mutex);
 	pr_info("%s:%s() line-%d: " format,	\
 		LEDS_DRV_TAG, __func__, __LINE__, ## args)
 
-static void led_debug_log(struct mtk_led_data *s_led,
-		int level, int mappingLevel)
-{
-	unsigned long cur_time_mod = 0;
-	unsigned long long cur_time_display = 0;
-	int ret = 0;
-
-	s_led->debug.current_t = sched_clock();
-	cur_time_display = s_led->debug.current_t;
-	do_div(cur_time_display, 1000000);
-	cur_time_mod = do_div(cur_time_display, 1000);
-
-	ret = snprintf(s_led->debug.buffer + strlen(s_led->debug.buffer),
-		4095 - strlen(s_led->debug.buffer),
-		"T:%lld.%ld,L:%d map:%d    ",
-		cur_time_display, cur_time_mod, level, mappingLevel);
-
-	s_led->debug.count++;
-
-	if (ret < 0 || ret >= 4096) {
-		pr_info("print log error!");
-		s_led->debug.count = 5;
-	}
-
-	if (level == 0 || s_led->debug.count >= 5 ||
-		(s_led->debug.current_t - s_led->debug.last_t) > 1000000000) {
-		LEDS_DRV_INFO("%s", s_led->debug.buffer);
-		s_led->debug.count = 0;
-		s_led->debug.buffer[strlen("[Light] Set directly ") +
-			strlen(s_led->cdev.name)] = '\0';
-	}
-
-	s_led->debug.last_t = sched_clock();
-}
-
-
 /****************************************************************************
  * add API for temperature control
  ***************************************************************************/
@@ -255,7 +219,6 @@ static int led_level_set(struct mtk_led_data *s_led,
 
 	schedule_work(&s_led->work);
 	s_led->level = brightness;
-	led_debug_log(s_led, brightness, mappingLevel);
 	led_pwm_set(s_led, brightness);
 	return 0;
 }
