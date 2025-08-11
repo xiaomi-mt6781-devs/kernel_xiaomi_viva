@@ -613,20 +613,19 @@ static void do_set_input_current_work(struct work_struct *work)
 
 	vbus_volt = battery_get_vbus();
 	if (vbus_volt < 4000) {
-		pr_info("%s no plug, return\n", __func__);
+		pr_debug("%s no plug, return\n", __func__);
 		pre_current = 0;
 		return;
 	}
 
 	if (pre_current == g_chg_info->set_input_curr) {
 		SYV690_get_aicr(chg_dev, &reg_val);
-		pr_info("%s current_now:%d\n", __func__, reg_val);
+		pr_debug("%s current_now:%d\n", __func__, reg_val);
 		if (pre_reg == reg_val) {
 			if (pre_reg == g_chg_info->set_input_curr && vbus_volt < 4660) {
-				pr_info("%s %d vbus(%d) too low, reg_val = set_input_curr = %d\n",
+				pr_debug("%s %d vbus(%d) too low, reg_val = set_input_curr = %d\n",
 						 __func__, __LINE__, vbus_volt, g_chg_info->set_input_curr);
 			} else {
-				pr_info("%s current same, return\n", __func__);
 				goto out;
 			}
 		}
@@ -714,7 +713,7 @@ out:
 static int SYV690_set_input_current(struct charger_device *chg_dev, u32 curr)
 {
 	g_chg_info->set_input_curr = curr;
-	pr_info("%s curr = %d\n", __func__, curr);
+	pr_debug("%s curr = %d\n", __func__, curr);
 	schedule_delayed_work(&g_chg_info->set_input_current_work, msecs_to_jiffies(0));
 	return 0;
 }
@@ -866,7 +865,7 @@ static int SYV690_charging(struct charger_device *chg_dev, bool enable)
 	u8 val;
 	
 	ret = SYV690_field_write(chgInfo, F_CHG_CFG, enable);
-	pr_err("%s charger %s\n", enable ? "enable" : "disable", ret < 0 ? "failed" : "successfully");
+	pr_debug("%s charger %s\n", enable ? "enable" : "disable", ret < 0 ? "failed" : "successfully");
 	ret = SYV690_field_read(chgInfo, F_CHG_CFG);
 	/*
 			ret < 0 read fail; 1 enable 0 disable
@@ -877,9 +876,8 @@ static int SYV690_charging(struct charger_device *chg_dev, bool enable)
 	if (chgInfo->chip_id == SC89890H_ID && enable) {
 		SYV690_update_bits(chgInfo,SYV690_REG_COND, 1, COND_FORCE_VINDPM_MASK,COND_FORCE_VINDPM_SHIFT);
 		ret = SYV690_read_byte(chgInfo, 0x0d, &val);
-		pr_info("%s SC89890H force vindpm:0x%x\n", __func__, val);
+		pr_debug("%s SC89890H force vindpm:0x%x\n", __func__, val);
 	}
-	SYV690_dump_register(chg_dev);
 	return ret;
 }
 /*
@@ -1181,9 +1179,9 @@ static int SYV690_set_ichg(struct charger_device *chg_dev, u32 curr)
 		reg_val = (curr/1000)/SC89890H_ICHG_STEP;
 	else
 		reg_val = (curr/1000)/SYV690_ICHG_STEP;
-	pr_err("Config charging Current  = %d uA\n", curr);
+	pr_debug("Config charging Current  = %d uA\n", curr);
 	ret = SYV690_field_write(chgInfo, F_ICHG, reg_val);
-	pr_err(" SYV690_set_ichg  write :%s\n",  ret < 0 ? "failed" : "successfully");
+	pr_debug(" SYV690_set_ichg  write :%s\n",  ret < 0 ? "failed" : "successfully");
 	return ret;
 }
 /*
@@ -1201,7 +1199,7 @@ static int SYV690_get_aicr(struct charger_device *chg_dev, u32 *curr)
 	if(ret >= 0){
 		reg_val = ret;
 		*curr  = (reg_val * 50 + 100)*1000;
-		pr_err("Config charging Current  = %d uA\n", *curr);
+		pr_debug("Config charging Current  = %d uA\n", *curr);
 	}else{
 		pr_err("Failed to get aicr!\n");
 	}
@@ -1254,10 +1252,10 @@ static int SYV690_set_vchg(struct charger_device *chg_dev, u32 volt)
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
 	int ret = 0;
 	u8 reg_val = (volt/1000 - SYV690_VREG_OFFSET)/SYV690_VREG_STEP;
-	pr_err("SYV690_set_vchg  = %d mV\n", volt/1000);
+	pr_debug("SYV690_set_vchg  = %d mV\n", volt/1000);
 
 	ret = SYV690_field_write(chgInfo, F_VREG, reg_val);
-	pr_err(" SYV690_set_vchg  write :%s\n",  ret < 0 ? "failed" : "successfully");
+	pr_debug(" SYV690_set_vchg  write :%s\n",  ret < 0 ? "failed" : "successfully");
 
 	return ret;
 }
@@ -1281,13 +1279,15 @@ static int SYV690_set_mivr(struct charger_device *chg_dev, u32 volt)
 	int ret = 0;
 	u8 val = 0;
 	int mVolt = volt/1000;
-	pr_err("SYV690_set_ivl volt = %d mV\n",mVolt);
+
+	pr_debug("SYV690_set_ivl volt = %d mV\n",mVolt);
 	/* offset 2600 ,step 100mv*/
        if(mVolt < SYV690_MIVR_OFFSET)
 	   	mVolt = SYV690_MIVR_OFFSET;
 	val = (mVolt - SYV690_MIVR_OFFSET)/SYV690_MIVR_STEP;
 	ret = SYV690_field_write(chgInfo, F_VINDPM, val);
-	pr_err(" SYV690_set_ivl  write :%s\n",  ret < 0 ? "failed" : "successfully");
+	
+	pr_debug(" SYV690_set_ivl  write :%s\n",  ret < 0 ? "failed" : "successfully");
 	return ret;
 
 }
@@ -1304,7 +1304,7 @@ static int SYV690_get_mivr(struct charger_device *chg_dev, u32 *mivr)
 	if(ret >= 0){
 		reg_val = ret;
 		*mivr  = (reg_val *SYV690_MIVR_STEP + SYV690_MIVR_OFFSET)*1000;
-		pr_err("SYV690_get_vchg  = %d mV\n", (*mivr)/1000);
+		pr_debug("SYV690_get_vchg  = %d mV\n", (*mivr)/1000);
 	}else{
 		pr_err("Failed to get mivr!\n");
 	}
@@ -1324,7 +1324,7 @@ static int SYV690_get_mivr_state(struct charger_device *chg_dev, bool *in_loop)
 	ret = SYV690_field_read(chgInfo, F_VDPM_STAT);
 	if(ret >= 0){
 		*in_loop  = ret;
-		pr_err("SYV690_get_mivr_state  = %d \n",ret);
+		pr_debug("SYV690_get_mivr_state  = %d \n",ret);
 	}else{
 		pr_err("Failed to get mivr state!\n");
 	}
@@ -1337,9 +1337,6 @@ static int SYV690_get_mivr_state(struct charger_device *chg_dev, bool *in_loop)
 static int SYV690_set_ieoc(struct charger_device *chg_dev, u32 curr)
 {
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
-
-	pr_err("SYV690_set_ieoc curr = %d ma\n", curr/1000);
-
 	return SYV690_set_term_current(chgInfo, curr / 1000);
 }
 /*
@@ -1363,8 +1360,6 @@ static int SYV690_safety_check(struct charger_device *chg_dev, u32 polling_ieoc)
 
 	adc_ibat = SYV690_adc_read_charge_current(chgInfo);
 
-	pr_err("%s: polling_ieoc = %d, ibat = %d\n",__func__, polling_ieoc, adc_ibat);
-
 	if (adc_ibat <= polling_ieoc)
 		counter++;
 	else
@@ -1372,7 +1367,7 @@ static int SYV690_safety_check(struct charger_device *chg_dev, u32 polling_ieoc)
 
 	/* If IBAT is less than polling_ieoc for 3 times, trigger EOC event */
 	if (counter == 3) {
-		pr_err("%s: polling_ieoc = %d, ibat = %d\n",__func__, polling_ieoc, adc_ibat);
+		pr_debug("%s: polling_ieoc = %d, ibat = %d\n",__func__, polling_ieoc, adc_ibat);
 		/*
 			notify battery full
 		*/
@@ -1434,7 +1429,6 @@ static int SYV690_get_min_ichg(struct charger_device *chg_dev, u32 *curr)
 static int  SYV690_enable_HZ(struct charger_device *chg_dev, bool en)
 {
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
-	pr_err("%s en = %d\n", __func__, en);
 	return SYV690_enter_hiz_mode(chgInfo , en);
 
 }
@@ -1460,7 +1454,7 @@ static int SYV690_is_safety_timer_enabled(struct charger_device *chg_dev, bool *
 	if(ret >= 0){
 		/* 0 disable 1 enable*/
 		*en  = ret;
-		pr_err("SYV690_is_safety_timer_enabled  = %d \n",ret);
+		pr_debug("SYV690_is_safety_timer_enabled  = %d \n",ret);
 	}else{
 		pr_err("Failed to get _safety_timer_enabled state!\n");
 	}
@@ -1490,7 +1484,7 @@ void chg_enable_powerpath(bool en)
 	u8 addr = 0;
 	u8 val = 0 ;
 	int ret = 0;
-	pr_err("%s en = %d\n", __func__, en);
+	pr_debug("%s en = %d\n", __func__, en);
 	SYV690_enter_hiz_mode(g_chg_info , en);
 	for (addr = 0x0; addr <= 0x14; addr++) {
 		ret = SYV690_read_byte(g_chg_info, addr, &val);
@@ -1564,7 +1558,7 @@ static  int SYV690_is_dpdm_done(struct SYV690_device *chgInfo,int *done)
 	int ret = 0;
 	unsigned char data=0;
 	ret = __SYV690_read_reg(chgInfo,SYV690_REG_CON2,&data);
-	pr_err("%s data(0x%x)\n",  __func__, data);
+	pr_debug("%s data(0x%x)\n",  __func__, data);
 	data &= (CON2_FORCE_DPDM_MASK << CON2_FORCE_DPDM_SHIFT);
 	*done = (data >> CON2_FORCE_DPDM_SHIFT);
 	 return ret;
@@ -1632,7 +1626,7 @@ static int SYV690_get_charger_type(struct SYV690_device *chgInfo)
 			break;
 	}
 
-	pr_err("%s done : %d ,retry = %d \n",  __func__, done,retry);
+	pr_debug("%s done : %d ,retry = %d \n",  __func__, done,retry);
 
 	for(retry = 0;retry < bc_count ; retry++){
 		chg_type = SYV690_check_charger_type(chgInfo);
@@ -1644,7 +1638,7 @@ static int SYV690_get_charger_type(struct SYV690_device *chgInfo)
 	vbus_volt = battery_get_vbus();
 	if (vbus_volt < 4100 && chgInfo->attach == false) {
 		chgInfo->chg_type = CHARGER_UNKNOWN;
-		pr_err("%s vbus_volt(%d) < 4100, not attach, main_chg_type = %d.\n",  __func__, vbus_volt, chgInfo->chg_type);
+		pr_debug("%s vbus_volt(%d) < 4100, not attach, main_chg_type = %d.\n",  __func__, vbus_volt, chgInfo->chg_type);
 		return chgInfo->chg_type;
 	} else if (vbus_volt > 4800 && chgInfo->attach == true && chg_type == SYV690_CHG_TYPE_NONE) {
 		chg_type = SYV690_check_charger_type(chgInfo);
@@ -1652,7 +1646,7 @@ static int SYV690_get_charger_type(struct SYV690_device *chgInfo)
 			msleep(50);
 			chg_type = SYV690_check_charger_type(chgInfo);
 		}
-		pr_err("%s chg_type = %d.\n",  __func__, chg_type);
+		pr_debug("%s chg_type = %d.\n",  __func__, chg_type);
 	}
 
 	switch (chg_type) {
@@ -1677,7 +1671,7 @@ static int SYV690_get_charger_type(struct SYV690_device *chgInfo)
 		break;
 	}
 
-	pr_err("%s: main_chg_type = %d ,retry = %d !!!\n", __func__, chgInfo->chg_type,retry);
+	pr_debug("%s: main_chg_type = %d ,retry = %d !!!\n", __func__, chgInfo->chg_type,retry);
 	return chgInfo->chg_type;
 }
 /*
@@ -1702,7 +1696,7 @@ static int SYV690_psy_online_changed(struct SYV690_device *chgInfo)
 	if (ret < 0)
 		pr_err("%s: psy online fail(%d)\n", __func__, ret);
 	else
-		pr_err("%s: pwr_rdy = %d\n",  __func__, chgInfo->attach);
+		pr_debug("%s: pwr_rdy = %d\n",  __func__, chgInfo->attach);
 	return ret;
 }
 /*
@@ -1727,13 +1721,13 @@ static int SYV690_psy_chg_type_changed(struct SYV690_device *chgInfo)
 	if (ret < 0)
 		pr_err("%s: psy type failed, ret = %d\n", __func__, ret);
 	else
-		pr_err("%s: chg_type = %d\n", __func__, chgInfo->chg_type);
+		pr_debug("%s: chg_type = %d\n", __func__, chgInfo->chg_type);
 	return ret;
 }
 
 static int pmic_set_usbsw_state(struct SYV690_device *chgInfo, int state)
 {
-	pr_err("%s: state = %d\n", __func__, state);
+	pr_debug("%s: state = %d\n", __func__, state);
 
 	/* Switch D+D- to AP/SYV690 */
 	if (state == SYV690_USBSW_CHG)
@@ -1749,15 +1743,15 @@ static int __SYV690_enable_usbchgen(struct SYV690_device *chgInfo, bool en)
 	const int max_wait_cnt = 200;
 	enum SYV690_usbsw_state usbsw = en ? SYV690_USBSW_CHG : SYV690_USBSW_USB;
 
-	pr_err("%s: en = %d\n", __func__, en);
+	pr_debug("%s: en = %d\n", __func__, en);
 	if (en) {
 		/* Workaround for CDP port */
 		for (i = 0; i < max_wait_cnt; i++) {
 			if (is_usb_rdy())
 				break;
-			pr_err("%s: CDP block\n", __func__);
+			pr_debug("%s: CDP block\n", __func__);
 			if (!(chgInfo->tcpc_attach)) {
-				pr_info("%s: plug out, not handle usb_switch\n", __func__);
+				pr_debug("%s: plug out, not handle usb_switch\n", __func__);
 				return 0;
 			}
 			msleep(100);
@@ -1765,7 +1759,7 @@ static int __SYV690_enable_usbchgen(struct SYV690_device *chgInfo, bool en)
 		if (i == max_wait_cnt)
 			pr_err("%s: CDP timeout\n", __func__);
 		else
-			pr_err("%s: CDP free\n", __func__);
+			pr_debug("%s: CDP free\n", __func__);
 	}
 
 	pmic_set_usbsw_state(chgInfo, usbsw);
@@ -1792,9 +1786,9 @@ static int SYV690_chgdet_pre_process(struct SYV690_device *chgInfo)
 #endif /* CONFIG_TCPC_CLASS */
 
 	if (attach) {
-		pr_err("%s: typec attach :%d\n", __func__,attach);
+		pr_debug("%s: typec attach :%d\n", __func__,attach);
 		if ( chgInfo->need_retry_det) {//is_pd_active() &&
-			pr_err("force charger type: STANDARD_HOST\n");
+			pr_debug("force charger type: STANDARD_HOST\n");
 			chgInfo->attach = attach;
 			chgInfo->chg_type = STANDARD_HOST;
 			ret = SYV690_psy_online_changed(chgInfo);
@@ -1803,7 +1797,7 @@ static int SYV690_chgdet_pre_process(struct SYV690_device *chgInfo)
 			return SYV690_psy_chg_type_changed(chgInfo);
 		} else if (chgInfo->ignore_usb) {
 			/* Skip charger type detection for pr_swap */
-			  pr_err("charger type: force Standard USB Host for pr_swap\n");
+			  pr_debug("charger type: force Standard USB Host for pr_swap\n");
                         chgInfo->attach = attach;
                         chgInfo->chg_type = STANDARD_HOST;
                         ret = SYV690_psy_online_changed(chgInfo);
@@ -1828,16 +1822,16 @@ static int SYV690_chgdet_post_process(struct SYV690_device *chgInfo)
 
 #ifdef CONFIG_TCPC_CLASS
 	attach = chgInfo->tcpc_attach;
-	pr_err("first:attach(%d) , chgInfo->attach:%d chgInfo->chg_type:%d \n", attach, chgInfo->attach, chgInfo->chg_type);
+	pr_debug("first:attach(%d) , chgInfo->attach:%d chgInfo->chg_type:%d \n", attach, chgInfo->attach, chgInfo->chg_type);
 #endif /* CONFIG_TCPC_CLASS */
 	
 	if(false == attach  ){ /* plug out charger! */
-		pr_err("remove charger,reset chg type and gpio status...!attach:%d \n", attach);	
+		pr_debug("remove charger,reset chg type and gpio status...!attach:%d \n", attach);	
 		chgInfo->chg_type = CHARGER_UNKNOWN;
 		sec_det_cnt = 0;
 	}else if(chgInfo->chg_type != NONSTANDARD_CHARGER && chgInfo->chg_type != CHARGER_UNKNOWN ) {/* if (chgInfo->attach == attach) { */
 		chgInfo->attach = attach;
-		pr_err("%s: attach(%d) is the same\n", __func__, attach);
+		pr_debug("%s: attach(%d) is the same\n", __func__, attach);
 		inform_psy = !attach;
 		if(!attach){
 			chgInfo->chg_type = CHARGER_UNKNOWN;
@@ -1846,7 +1840,7 @@ static int SYV690_chgdet_post_process(struct SYV690_device *chgInfo)
 		goto out;
 	}
 	chgInfo->attach = attach;
-	pr_err("%s: attach = %d\n", __func__, attach);
+	pr_debug("%s: attach = %d\n", __func__, attach);
 	/* Plug out during BC12 */
 	if (!attach) {
 		gpio_set_value(chgInfo->usb_switch_cb1_gpio, 0);
@@ -1863,13 +1857,13 @@ static int SYV690_chgdet_post_process(struct SYV690_device *chgInfo)
 	//CHG
 	gpio_set_value(chgInfo->usb_switch_cb1_gpio, 1);
 	gpio_set_value(chgInfo->usb_switch_cb2_gpio, 1);
-	pr_err("%s:Before BC1.2  cb1_gpio = %d ,cb2_gpio = %d\n", __func__, gpio_get_value(chgInfo->usb_switch_cb1_gpio),gpio_get_value(chgInfo->usb_switch_cb2_gpio));
+	pr_debug("%s:Before BC1.2  cb1_gpio = %d ,cb2_gpio = %d\n", __func__, gpio_get_value(chgInfo->usb_switch_cb1_gpio),gpio_get_value(chgInfo->usb_switch_cb2_gpio));
 	/* Plug in */
 	SYV690_get_charger_type(chgInfo);
 	pre_current = 0;
 	if ((chgInfo->chg_type == NONSTANDARD_CHARGER)
 		 || ((chgInfo->chg_type == CHARGER_UNKNOWN) && (true == SYV690_field_read(chgInfo, F_VBUS_GD)))) {
-		pr_err("%s is nonstd, retry bc.\n", __func__);
+		pr_debug("%s is nonstd, retry bc.\n", __func__);
 		schedule_delayed_work(&chgInfo->charger_secdet_work, msecs_to_jiffies(CHARGER_SEC_WORK_DELAY));
 	}
 	if (chgInfo->chg_type == STANDARD_CHARGER || chgInfo->chg_type == HVDCP_CHARGER || chgInfo->chg_type == STANDARD_HOST) {
@@ -1880,7 +1874,7 @@ static int SYV690_chgdet_post_process(struct SYV690_device *chgInfo)
 		gpio_set_value(chgInfo->usb_switch_cb1_gpio, 0);
 		gpio_set_value(chgInfo->usb_switch_cb2_gpio, 0);
 	}
-	pr_err("%s:After BC1.2  cb1_gpio = %d ,cb2_gpio = %d\n", __func__, gpio_get_value(chgInfo->usb_switch_cb1_gpio),gpio_get_value(chgInfo->usb_switch_cb2_gpio));
+	pr_debug("%s:After BC1.2  cb1_gpio = %d ,cb2_gpio = %d\n", __func__, gpio_get_value(chgInfo->usb_switch_cb1_gpio),gpio_get_value(chgInfo->usb_switch_cb2_gpio));
 	/*
 			how about NONSTANDARD_CHARGER ? start second check?
 	*/
@@ -1919,7 +1913,7 @@ static int SYV690_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 #ifdef CONFIG_TCPC_CLASS
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
 	static int idx = 0;
-	pr_err("%s en : %d\n", __func__, en);
+	pr_debug("%s en : %d\n", __func__, en);
 	chgInfo->chg_det_enable = en;
 
 	mutex_lock(&chgInfo->chgdet_lock);
@@ -1937,10 +1931,10 @@ static int SYV690_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 	if(en){
 		SYV690_chgdet_pre_process(chgInfo);
 		idx++;
-		pr_err("checkNUM:insert charger idx:%d \n",idx);
+		pr_debug("checkNUM:insert charger idx:%d \n",idx);
 	}else{
 		idx=0;
-		pr_err("checkNUM:remove charger idx:%d \n",idx);		
+		pr_debug("checkNUM:remove charger idx:%d \n",idx);		
 	}
 	SYV690_chgdet_post_process(chgInfo);
 #else
@@ -1970,7 +1964,7 @@ static int SYV690_set_otg(struct charger_device *chg_dev, bool en)
 	}
 	gpio_set_value(chgInfo->otg_en_gpio, en);
 	ret = SYV690_field_write(chgInfo, F_OTG_CFG, en);
-	pr_err(" SYV690_set_otg  write :%s , otg_en = %d\n",  ret < 0 ? "failed" : "successfully",gpio_get_value(chgInfo->otg_en_gpio));
+	pr_debug(" SYV690_set_otg  write :%s , otg_en = %d\n",  ret < 0 ? "failed" : "successfully",gpio_get_value(chgInfo->otg_en_gpio));
 	return ret;
 }
 /*
@@ -1986,17 +1980,17 @@ static int SYV690_set_boost_ilmt(struct charger_device *chg_dev, u32 curr)
 	int ret = 0,i=0;
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
 
-	pr_err("SYV690_set_boost_ilmt curr = %d ua!\n", curr);
+	pr_debug("SYV690_set_boost_ilmt curr = %d ua!\n", curr);
 	for (i = 0; i < ARRAY_SIZE(otg_oc_table); i++) {
 		if (curr <= otg_oc_table[i])
 			break;
 	}
 	if (i == ARRAY_SIZE(otg_oc_table))
 		i = SYV690_OTG_OC_MAXVAL;
-	pr_err("%s: select oc threshold = %d\n", __func__, otg_oc_table[i]);
+	pr_debug("%s: select oc threshold = %d\n", __func__, otg_oc_table[i]);
 
 	ret = SYV690_field_write(chgInfo, F_BOOSTI, i);
-	pr_err(" SYV690_set_boost_ilmt  write :%s\n",  ret < 0 ? "failed" : "successfully");
+	pr_debug(" SYV690_set_boost_ilmt  write :%s\n",  ret < 0 ? "failed" : "successfully");
 	return ret;
 }
 /*
@@ -2006,7 +2000,7 @@ static int SYV690_set_boost_ilmt(struct charger_device *chg_dev, u32 curr)
 
 static int SYV690_do_event(struct charger_device *chg_dev, u32 event, u32 args)
 {
-	pr_err("%s: notify event = %d\n", __func__, event);
+	pr_debug("%s: notify event = %d\n", __func__, event);
 	switch (event) {
 	case EVENT_EOC:
 		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_EOC);
@@ -2026,7 +2020,7 @@ static int SYV690_enable_hvdcp(struct charger_device *chg_dev, bool en)
 	struct SYV690_device *chgInfo = dev_get_drvdata(&chg_dev->dev);
 
 	if (chgInfo == NULL) {
-		pr_err("%s fail\n", __func__);
+		pr_debug("%s fail\n", __func__);
 		return 0;
 	}
 	pr_info("%s enable hvdcp:%d\n", __func__, en);
@@ -2050,7 +2044,7 @@ static int SYV690_get_ibus(struct charger_device *chg_dev, u32 *ibus)
 	if(ret >= 0){
 		reg_val = ret;
 		*ibus  = (reg_val * SYV690_ICHGR_STEP)*1000;
-		pr_err("SYV690_get_ibus Current  = %d uA\n", *ibus);
+		pr_debug("SYV690_get_ibus Current  = %d uA\n", *ibus);
 	}else{
 		pr_err("Failed to get IBUS!\n");
 	}
@@ -2067,7 +2061,7 @@ static int SYV690_get_vbus(struct charger_device *chg_dev, u32 *vbus)
 	if(ret >= 0){
 		reg_val = ret;
 		*vbus  = (reg_val * SYV690_VBUS_STEP + SYV690_VBUS_OFFSET)*1000;
-		pr_err("SYV690_get_vbus  = %d uv\n", *vbus);
+		pr_debug("SYV690_get_vbus  = %d uv\n", *vbus);
 	}else{
 		pr_err("Failed to get IBUS!\n");
 	}
@@ -2083,7 +2077,7 @@ static int SYV690_get_vbat(struct charger_device *chg_dev,u32 *vbat)
 	if(ret >= 0){
 		reg_val = ret;
 		*vbat  = (reg_val * SYV690_VBAT_STEP + SYV690_VBAT_OFFSET - SYV690_VBAT_CALIBRATION)*1000;
-		pr_err("SYV690_get_vbat  = %d uv\n", *vbat);
+		pr_debug("SYV690_get_vbat  = %d uv\n", *vbat);
 	}else{
 		pr_err("Failed to get VBAT!\n");
 	}
@@ -2413,7 +2407,7 @@ static void do_charger_secdet_work(struct work_struct *work)
 	int ret = 0;
 	union power_supply_propval propval = {0,};
 	
-	pr_err("%s: g_chg_info->chg_type = %d, sec_det_cnt = %d.\n",__func__, g_chg_info->chg_type, sec_det_cnt);
+	pr_debug("%s: g_chg_info->chg_type = %d, sec_det_cnt = %d.\n",__func__, g_chg_info->chg_type, sec_det_cnt);
 	if (NONSTANDARD_CHARGER == g_chg_info->chg_type && sec_det_cnt <= CHARGER_SEC_WORK_MAX) {
 		if (g_chg_info->charger) {
 			ret = power_supply_get_property(g_chg_info->charger,POWER_SUPPLY_PROP_CHARGE_TYPE,&propval);
@@ -2439,7 +2433,7 @@ static void do_charger_secdet_work(struct work_struct *work)
 }
 static void sc8989h_set_9v(void)
 {
-	pr_err("SC89890H set 9V");
+	pr_debug("SC89890H set 9V");
 	SYV690_update_bits(g_chg_info, SYV690_REG_CON1,
 		0x02, CON1_DM_DRIVE_MASK, CON1_DM_DRIVE_SHIFT);
 	SYV690_update_bits(g_chg_info, SYV690_REG_CON1,
@@ -2457,7 +2451,7 @@ static void do_hvdcp_det_work(struct work_struct *work)
 	union power_supply_propval propval = {0,};
 	unsigned long long delta;
 	delta = ktime_to_ms(ktime_sub(ktime_get(), g_chg_info->boot_time));	
-	pr_err("%s:power-on time: %d ms.\n", __func__, delta);
+	pr_debug("%s:power-on time: %d ms.\n", __func__, delta);
 	pre_type = g_chg_info->chg_type;
 	if (g_chg_info->charger) {
 		ret = power_supply_get_property(g_chg_info->charger,POWER_SUPPLY_PROP_CHARGE_TYPE,&propval);
@@ -2504,10 +2498,10 @@ static void do_hardreset_hvdcp_work(struct work_struct *work)
 {
 	if (charger_manager_pd_is_online() || (g_chg_info->chg_type == STANDARD_HOST) ||
 			(g_chg_info->chg_type == CHARGING_HOST)) {
-		pr_err("%s pd is ready, return type:%d\n", __func__, g_chg_info->chg_type);
+		pr_debug("%s pd is ready, return type:%d\n", __func__, g_chg_info->chg_type);
 		return;
 	} else {
-		pr_err("%s enable hvdcp\n", __func__);
+		pr_debug("%s enable hvdcp\n", __func__);
 		if (g_chg_info->chip_id == SC89890H_ID)
 			sc8989h_set_9v();
 		else {
@@ -2583,11 +2577,11 @@ static int SYV690_probe(struct i2c_client *client,
 		return -ENODEV;
 	}
 #else
-	pr_err("Chip with ID=%d !!!\n", chg_info->chip_id);
+	pr_debug("Chip with ID=%d !!!\n", chg_info->chip_id);
 #endif
 	for (addr = 0x0; addr <= 0x14; addr++) {
 		ret = SYV690_read_byte(chg_info, addr, &val);
-		pr_err("Reg[%.2x] = 0x%.2x,ret = %d\n", addr, val,ret);
+		pr_debug("Reg[%.2x] = 0x%.2x,ret = %d\n", addr, val,ret);
 	}
 	
 	match = of_match_node(SYV690_of_match, node);
@@ -2668,11 +2662,11 @@ static int SYV690_suspend(struct device *dev)
 {
 	u8 addr = 0 ,val = 0;
 	struct SYV690_device *chg= dev_get_drvdata(dev);
-	pr_err("SYV690 Enter suspend\n");
+	pr_debug("SYV690 Enter suspend\n");
 
 	for (addr = 0x0; addr <= 0x14; addr++) {
 		 SYV690_read_byte(chg, addr, &val);
-		pr_err("SYV690_REG[%.2x] = 0x%.2x\n", addr, val);
+		pr_debug("SYV690_REG[%.2x] = 0x%.2x\n", addr, val);
 	}
 	return 0 ;
 }

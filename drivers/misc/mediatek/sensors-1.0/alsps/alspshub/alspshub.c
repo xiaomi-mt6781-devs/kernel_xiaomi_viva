@@ -899,8 +899,6 @@ static void backlight_level_work_func(struct work_struct *work)
 	int ret = 0;
 	struct alspshub_ipi_data *obj = obj_ipi_data;
 
-	pr_info("%s\n", __func__);
-
 	ret = sensor_backlight_level_to_hub(ID_LIGHT, &obj->backlight_level);
 	if (ret < 0) {
 		pr_err("%s is failed!!\n", __func__);
@@ -919,7 +917,6 @@ static int backlight_level_notifier_callback(struct notifier_block *self,
 	int err = 0;
 	struct alspshub_ipi_data *obj = obj_ipi_data;
 
-	pr_info("alspshub %s: level = %d\n", __func__, (int)event);
 	obj->backlight_level = (int)event;
 
 	err = queue_work(obj->backlight_level_workqueue, &obj->backlight_level_work);
