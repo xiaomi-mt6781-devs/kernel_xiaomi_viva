@@ -523,7 +523,7 @@ static void kwdt_process_kick(int local_bit, int cpu,
 
 	spin_unlock_bh(&lock);
 
-	pr_info("%s", msg_buf);
+	pr_debug("%s", msg_buf);
 
 	if (dump_timeout) {
 #if IS_ENABLED(CONFIG_MTK_TICK_BROADCAST_DEBUG)
@@ -534,7 +534,7 @@ static void kwdt_process_kick(int local_bit, int cpu,
 		dump_wdk_bind_info(false);
 
 		if (systimer_base)
-			pr_info("SYST0 CON%x VAL%x\n",
+			pr_debug("SYST0 CON%x VAL%x\n",
 				ioread32(systimer_base + SYST0_CON),
 				ioread32(systimer_base + SYST0_VAL));
 #if CHG_TMO_EN
