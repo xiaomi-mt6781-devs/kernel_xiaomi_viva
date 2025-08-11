@@ -688,7 +688,6 @@ static int aw8622x_haptic_stop(struct aw8622x *aw8622x)
 	unsigned char reg_val = 0;
 	bool force_flag = true;
 
-	aw_dev_err(aw8622x->dev, "%s enter\n", __func__);
 	aw8622x->play_mode = AW8622X_HAPTIC_STANDBY_MODE;
 	aw8622x_i2c_write(aw8622x, AW8622X_REG_PLAYCFG4, 0x02);
 	while (cnt) {
@@ -697,18 +696,18 @@ static int aw8622x_haptic_stop(struct aw8622x *aw8622x)
 		    || (reg_val & 0x0f) == 0x0A) {
 			cnt = 0;
 			force_flag = false;
-			aw_dev_err(aw8622x->dev, "%s entered standby! glb_state=0x%02X\n",
+			aw_dev_dbg(aw8622x->dev, "%s entered standby! glb_state=0x%02X\n",
 				    __func__, reg_val);
 		} else {
 			cnt--;
-			aw_dev_err(aw8622x->dev, "%s wait for standby, glb_state=0x%02X\n",
+			aw_dev_dbg(aw8622x->dev, "%s wait for standby, glb_state=0x%02X\n",
 			     __func__, reg_val);
 		}
 		usleep_range(2000, 2500);
 	}
 
 	if (force_flag) {
-		aw_dev_err(aw8622x->dev, "%s force to enter standby mode!\n",
+		aw_dev_dbg(aw8622x->dev, "%s force to enter standby mode!\n",
 			   __func__);
 		aw8622x_i2c_write_bits(aw8622x, AW8622X_REG_SYSCTRL2,
 				       AW8622X_BIT_SYSCTRL2_STANDBY_MASK,
