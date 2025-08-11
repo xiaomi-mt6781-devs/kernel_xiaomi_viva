@@ -182,8 +182,6 @@ signed int battery_get_soc(void)
 	ret = power_supply_get_property(bms,POWER_SUPPLY_PROP_CAPACITY,&propval);
 	if (ret < 0)
 		pr_err("%s: psy type failed, ret = %d\n", __func__, ret);
-	else
-		pr_err("%s: capacity = %d\n", __func__, propval.intval);
 	return propval.intval;
 #endif
 }
@@ -212,8 +210,6 @@ signed int battery_get_bat_temperature(void)
 	ret = power_supply_get_property(bms,POWER_SUPPLY_PROP_TEMP,&propval);
 	if (ret < 0)
 		pr_err("%s: psy type failed, ret = %d\n", __func__, ret);
-	else
-		pr_err("%s: temp = %d\n", __func__, propval.intval);
 	return propval.intval / 10;
 #endif
 #endif
