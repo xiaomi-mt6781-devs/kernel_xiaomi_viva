@@ -502,7 +502,7 @@ static int mtk_get_prop_soc_decimal(int *val)
 		pr_err("Failed to get hal_soc, rc=%d\n", rc);
 	}
 	hal_soc = pval.intval;
-	pr_err("szw:real_soc =%d\n",fg_cust_data.ui_old_soc);
+
 	soc_dec = fg_cust_data.ui_old_soc % 100;
 	soc = mtk_get_prop_soc_decimal_rate(&dec_rate);
 	pr_debug("debug soc_dec=%d dec_rate=%d last_val=%d last_soc_dec=%d last_hal_soc=%d\n",

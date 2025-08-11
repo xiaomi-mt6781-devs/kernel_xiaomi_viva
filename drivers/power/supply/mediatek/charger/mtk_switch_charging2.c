@@ -274,7 +274,7 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 	}
 
 	if (info->chr_type == PPS_CHARGER) {
-		pr_err("%s %d is_usb_pd = %d\n", __func__, __LINE__, is_usb_pd);
+		pr_debug("%s %d is_usb_pd = %d\n", __func__, __LINE__, is_usb_pd);
 		if (is_usb_pd) {
 			pdata->input_current_limit = 1500000;
 			pdata->charging_current_limit = 1500000;
@@ -284,7 +284,7 @@ static void swchg_select_charging_current_limit(struct charger_manager *info)
 			if (bat_vol >= 4450)
 				pdata->charging_current_limit = 2000000;
 		}
-		chr_err("PPS_CHARGER: ibus_curr :%d, ibat_curr : %d \n", pdata->input_current_limit,pdata->charging_current_limit);
+		chr_debug("PPS_CHARGER: ibus_curr :%d, ibat_curr : %d \n", pdata->input_current_limit,pdata->charging_current_limit);
 	}else if (is_typec_adapter(info)) {
 		if (adapter_dev_get_property(info->pd_adapter, TYPEC_RP_LEVEL)
 			== 3000) {
@@ -417,23 +417,6 @@ done:
 	if (ret != -ENOTSUPP && pdata->input_current_limit < aicr1_min)
 		pdata->input_current_limit = 0;
 #endif
-	chr_err("force:%d thermal:%d,%d pe4:%d,%d,%d setting:%d %d sc:%d,%d,%d type:%d usb_unlimited:%d usbif:%d usbsm:%d aicl:%d atm:%d,thermal_mitigation_current:%d,info->cp_status:%d \n",
-		_uA_to_mA(pdata->force_charging_current),
-		_uA_to_mA(pdata->thermal_input_current_limit),
-		_uA_to_mA(pdata->thermal_charging_current_limit),
-		_uA_to_mA(info->pe4.pe4_input_current_limit),
-		_uA_to_mA(info->pe4.pe4_input_current_limit_setting),
-		_uA_to_mA(info->pe4.input_current_limit),
-		_uA_to_mA(pdata->input_current_limit),
-		_uA_to_mA(pdata->charging_current_limit),
-		_uA_to_mA(info->sc.pre_ibat),
-		_uA_to_mA(info->sc.sc_ibat),
-		info->sc.solution,
-		info->chr_type, info->usb_unlimited,
-		IS_ENABLED(CONFIG_USBIF_COMPLIANCE), info->usb_state,
-		pdata->input_current_limit_by_aicl, info->atm_enabled,
-		_uA_to_mA(info->thermal_mitigation_current),
-		info->cp_status);
 	if(info->chr_type == PPS_CHARGER){
 		if((info->thermal_mitigation_current) >= BAT_CURR_2000MA && (info->cp_status)) {
 			pdata->input_current_limit = BAT_CURR_100MA;
@@ -475,7 +458,7 @@ done:
 					charger_dev_get_charging_current(info->chg1_dev, &last_ichg);
 					charging_current_limit = min(pdata->charging_current_limit, last_ichg);
 				}
-				pr_err("%s batt_volt:%d curr_now:%d iterm:%d ichg:%d", __func__, bat_vol,
+				pr_debug("%s batt_volt:%d curr_now:%d iterm:%d ichg:%d", __func__, bat_vol,
 						current_now, info->iterm_curr, charging_current_limit);
 			}
 		}
@@ -505,7 +488,7 @@ done:
 	if (mtbf_current == 1500  && info->chr_type == CHARGING_HOST) {
 		charging_current_limit = mtbf_current * 1000;
 		pdata->input_current_limit = mtbf_current * 1000;
-		chr_err("pdata->charging_current_limit = %d, pdata->input_current_limit = %d, gm.mtbf_current= %d\n",
+		chr_debug("pdata->charging_current_limit = %d, pdata->input_current_limit = %d, gm.mtbf_current= %d\n",
 				 charging_current_limit, pdata->input_current_limit, mtbf_current);
 	}
 	if((!IS_STD_BATTERY) && ((pdata->input_current_limit > NOSTD_BAT_INPUTCURR_LIMIT) 
@@ -824,7 +807,6 @@ static void swchg_turn_on_charging(struct charger_manager *info)
 				propval.intval = true;
 			else
 				propval.intval = false;
-			chr_err("[charger]charger_dev_set_constant_voltage!\n");
 		}
 	}
 
