@@ -188,45 +188,6 @@ int mt_leds_brightness_set(char *name, int level)
 }
 EXPORT_SYMBOL(mt_leds_brightness_set);
 
-static void led_debug_log(struct mtk_led_data *s_led, int level)
-{
-	unsigned long cur_time_mod = 0;
-	unsigned long long cur_time_display = 0;
-	int ret = 0;
-	int level_h, level_l;
-
-	s_led->debug.current_t = sched_clock();
-	cur_time_display = s_led->debug.current_t;
-	do_div(cur_time_display, 1000000);
-	cur_time_mod = do_div(cur_time_display, 1000);
-	level_h = (level & 0x7F8) >> 3;
-	level_l = level & 0x7;
-
-	ret = snprintf(s_led->debug.buffer + strlen(s_led->debug.buffer),
-		4095 - strlen(s_led->debug.buffer),
-		"T:%lld.%ld,  B:%d L:%d,  L:%0x H:%0x    ",
-		cur_time_display, cur_time_mod,
-		s_led->last_brightness, level, level_l, level_h);
-
-	s_led->debug.count++;
-
-	if (ret < 0 || ret >= 4096) {
-		dev_info(s_led->conf.cdev.dev, "[ERROR] print log error!");
-		s_led->debug.count = 5;
-	}
-
-	if (level == 0 || s_led->debug.count >= 5 ||
-		(s_led->debug.current_t - s_led->debug.last_t) > 1000000000) {
-		dev_info(s_led->conf.cdev.dev, "%s", s_led->debug.buffer);
-		s_led->debug.count = 0;
-		s_led->debug.buffer[strlen("[Light] Set directly ") +
-			strlen(s_led->conf.cdev.name)] = '\0';
-	}
-
-	s_led->debug.last_t = sched_clock();
-}
-
-
 /****************************************************************************
  * driver functions
  ***************************************************************************/
@@ -246,7 +207,6 @@ static int led_level_i2c_set(struct mtk_led_data *s_led, int level)
 	level_h = (level >> 3) & 0xFF;
 	level_l = level & 0x7;
 
-	led_debug_log(s_led, level);
 #ifdef CONFIG_MTK_GATE_IC
 	_gate_ic_backlight_set(level);
 #endif
